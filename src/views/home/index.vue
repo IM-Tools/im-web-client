@@ -6,18 +6,16 @@ const count = ref(0)
 <template>
   <p>123456</p>
   <h1>{{ count }}</h1>
-  <img src="@/assets/images/logo.png" alt="">
-  <div class="test">
-    <p>123</p>
-  </div>
 </template>
 
 <style scoped lang="less">
 .test{
   width: 100%;
   color: red;
+  background-color: var(--theme-bgColor);
   p{
     font-size: 16px;
   }
 }
+
 </style>

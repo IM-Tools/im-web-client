@@ -8,6 +8,14 @@ const pinia = createPinia();
 // 引入 ElementPlus
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+// 引入基本样式
+import 'normalize.css/normalize.css'
+import '@/assets/css/base.css'
+import '@/assets/css/theme.less'
 
 import App from './App.vue'
-createApp(App).use(router).use(ElementPlus).use(pinia).mount('#app')
+const app = createApp(App)
+app.use(router)
+app.use(ElementPlus)
+app.use(pinia)
+app.mount('#app')
