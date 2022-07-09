@@ -3,14 +3,17 @@ import { reactive, ref } from 'vue'
 import type { FormInstance } from 'element-plus'
 import { checkEmail } from '@/utils'
 // icon图标
-import { User, Unlock } from '@element-plus/icons-vue'
+import { User, Unlock, FolderOpened, EditPen } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { mainStore } from '@/store';
+const store = mainStore()
 // 用户账号密码
 const userInfo = reactive({
   account: '',
   password: '',
 })
 // 是否注册
-const isReverse = ref<Boolean>(true)
+const isReverse = ref<Boolean>(false)
 const reverseClick = () => {
   isReverse.value = !isReverse.value
 }
@@ -46,7 +49,63 @@ const registerInfo = reactive({
   password_repeat: '',
   code: '',
 })
-// 提交方法
+const registerRef = ref<FormInstance>()
+// 注册效验规则
+const validateEmail = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入邮箱'))
+  } else {
+    if (!checkEmail(registerInfo.email)) {
+      if (!ruleFormRef.value) return
+      callback(new Error('请输入正确的邮箱'))
+    }
+    callback()
+  }
+}
+const validateName = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入用户名'))
+  } else {
+    callback()
+  }
+}
+const validatePassword = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入密码'))
+  } else {
+    if (registerInfo.password.length < 6 || registerInfo.password.length > 20) {
+      if (!ruleFormRef.value) return
+      callback(new Error('密码长度应为6-20位'))
+    }
+    callback()
+  }
+}
+const validateCheck = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请确认密码'))
+  } else {
+    if (registerInfo.password !== registerInfo.password_repeat) {
+      if (!ruleFormRef.value) return
+      callback(new Error('输入密码不一致请重新输入'))
+    }
+    callback()
+  }
+}
+const validateCode = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请输入验证码'))
+  } else {
+    callback()
+  }
+}
+const registerRules = reactive({
+  email: [{ validator: validateEmail, trigger: 'blur' }],
+  name: [{ validator: validateName, trigger: 'blur' }],
+  password: [{ validator: validatePassword, trigger: 'blur' }],
+  password_repeat: [{ validator: validateCheck, trigger: 'blur' }],
+  code: [{ validator: validateCode, trigger: 'blur' }],
+})
+// 登录
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
@@ -58,11 +117,30 @@ const submitForm = (formEl: FormInstance | undefined) => {
     }
   })
 }
-
-// const resetForm = (formEl: FormInstance | undefined) => {
-//   if (!formEl) return
-//   formEl.resetFields()
-// }
+// 确认注册
+const submitRegisterForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formEl.validate((valid) => {
+    if (valid) {
+      ElMessage({
+        message: '注册成功，点击直接登录！',
+        type: 'success',
+      })
+      isReverse.value = false
+      userInfo.account = registerInfo.email
+      userInfo.password = registerInfo.password
+    } else {
+      console.log('error submit!')
+      return false
+    }
+  })
+}
+// 主题列表
+const themeList = store.themeList
+// 主题点击事件
+const themeClick = (theme: string) => {
+  store.setTheme(theme)
+}
 </script>
 
 <template>
@@ -95,7 +173,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 type="password"
                 :prefix-icon="Unlock"
                 placeholder="请输入密码"
-                clearable
+                show-password
               />
             </el-form-item>
           </el-form>
@@ -115,14 +193,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
       </div>
       <div class="right">
         <div class="title">
-          <img src="@/assets/images/logo.png" alt="" />
+          <div class="img">
+            <img src="@/assets/images/logo.png" alt="" />
+          </div>
           <h2>注册账号</h2>
         </div>
         <div class="userInfo">
           <el-form
-            ref="ruleFormRef"
+            ref="registerRef"
             :model="registerInfo"
-            :rules="rules"
+            :rules="registerRules"
             label-width="0"
             class="demo-ruleForm"
           >
@@ -130,7 +210,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
               <el-input
                 v-model="registerInfo.email"
                 type="text"
-                :prefix-icon="User"
+                :prefix-icon="FolderOpened"
                 placeholder="请输入邮箱"
                 clearable
               />
@@ -150,7 +230,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 type="password"
                 :prefix-icon="Unlock"
                 placeholder="请输入密码"
-                clearable
+                show-password
               />
             </el-form-item>
             <el-form-item prop="password_repeat">
@@ -159,7 +239,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 type="password"
                 :prefix-icon="Unlock"
                 placeholder="请确认密码"
-                clearable
+                show-password
               />
             </el-form-item>
             <el-form-item prop="code">
@@ -167,7 +247,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 <el-input
                   v-model="registerInfo.code"
                   type="text"
-                  :prefix-icon="Unlock"
+                  :prefix-icon="EditPen"
                   placeholder="请输入验证码"
                   clearable
                 />
@@ -182,7 +262,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         </div>
         <div class="tool">
           <div class="login-btn">
-            <el-button type="primary" @click="submitForm(ruleFormRef)"
+            <el-button type="primary" @click="submitRegisterForm(registerRef)"
               >确认注册</el-button
             >
           </div>
@@ -195,6 +275,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
       </div>
       <div class="mask">
         <img src="@/assets/images/login.png" alt="" />
+      </div>
+      <div class="theme">
+        <ul>
+          <li v-for="item in themeList" :key="item.id" @click="themeClick(item.class)">{{item.name}}</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -216,7 +301,6 @@ const submitForm = (formEl: FormInstance | undefined) => {
     height: 430px;
     background-color: var(--theme-bgColor);
     border-radius: 10px;
-    overflow: hidden;
     display: flex;
     justify-content: space-between;
   }
@@ -260,16 +344,26 @@ const submitForm = (formEl: FormInstance | undefined) => {
     }
   }
   .right {
-    .title{
+    .title {
       width: 100%;
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
-      img{
+      color: var(--theme-color);
+      .img {
         width: 30px;
         height: 30px;
         border-radius: 50%;
+        overflow: hidden;
+        background-color: #fcedef;
+        margin-right: 10px;
+        img {
+          width: 100%;
+        }
+      }
+      h2 {
+        font-size: 22px;
       }
     }
     .userInfo {
@@ -279,10 +373,19 @@ const submitForm = (formEl: FormInstance | undefined) => {
       flex-wrap: wrap;
       justify-content: center;
     }
-    .code{
+    .code {
       display: flex;
-      .btn{
+      .btn {
         margin-left: 10px;
+      }
+    }
+    .tool {
+      margin: 10px auto 0;
+      .login-btn,
+      .register-btn {
+        width: 100%;
+        display: flex;
+        margin: 5px 0;
       }
     }
   }
@@ -295,8 +398,27 @@ const submitForm = (formEl: FormInstance | undefined) => {
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
+    height: 100%;
+    overflow: hidden;
     img {
       width: 100%;
+    }
+  }
+  .theme{
+    position: absolute;
+    top: -20px;
+    right: 0;
+    ul{
+      display: flex;
+      li{
+        margin: 0 5px;
+        font-size: 12px;
+        color: #e8e9fa;
+        cursor: pointer;
+        &:hover{
+          color: #d5d8f8;
+        }
+      }
     }
   }
   .reverse .mask {

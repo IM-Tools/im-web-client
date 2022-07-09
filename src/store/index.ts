@@ -5,15 +5,22 @@ export const mainStore = defineStore('main', {
       themeList: [
         {
           name: '亮色主题',
-          class: 'light-theme'
+          class: 'light-theme',
+          id: 1
         },
         {
           name: '暗色主题',
-          class: 'dark-theme'
+          class: 'dark-theme',
+          id: 1
         }
       ],
-      themeSelect: 'light-theme'
+      themeSelect: localStorage.getItem('theme') || 'light-theme'
     }
   },
-  actions: {},
+  actions: {
+    setTheme(theme: string){
+      localStorage.setItem('theme',theme)
+      this.themeSelect = theme
+    }
+  },
 })
