@@ -114,9 +114,6 @@ const submitForm = (formEl: FormInstance | undefined) => {
         </div>
       </div>
       <div class="right">
-        <!-- <div class="logo">
-          <img src="@/assets/images/logo.png" alt="" />
-        </div> -->
         <div class="title">
           <img src="@/assets/images/logo.png" alt="" />
           <h2>注册账号</h2>
@@ -268,7 +265,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
       text-align: center;
       display: flex;
       align-items: center;
-      // justify-content: ;
+      justify-content: center;
       img{
         width: 30px;
         height: 30px;
