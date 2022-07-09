@@ -11,8 +11,9 @@ const store = mainStore()
 </template>
 
 <style lang="less">
+@import '@/assets/css/index.less';
 body{
-  background-color: #828cf6;
+  background-color: @mainColor;
   .main{
     position: absolute;
     width: 1200px;
@@ -20,7 +21,6 @@ body{
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    background-color: yellow;
     border-radius: 5px;
   }
 }
