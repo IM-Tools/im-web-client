@@ -6,6 +6,9 @@ import { checkEmail } from '@/utils'
 import { User, Unlock, FolderOpened, EditPen } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { mainStore } from '@/store';
+// router
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const store = mainStore()
 // 用户账号密码
 const userInfo = reactive({
@@ -111,6 +114,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
   formEl.validate((valid) => {
     if (valid) {
       console.log('submit!')
+      router.push({
+        path: '/'
+      })
     } else {
       console.log('error submit!')
       return false

@@ -4,18 +4,14 @@ const count = ref(0)
 </script>
 
 <template>
-  <p>123456</p>
-  <h1>{{ count }}</h1>
+  <div class="home"></div>
 </template>
 
 <style scoped lang="less">
-.test{
+.home{
   width: 100%;
-  color: red;
+  height: 100%;
   background-color: var(--theme-bgColor);
-  p{
-    font-size: 16px;
-  }
+  border-radius: 3px;
 }
-
 </style>

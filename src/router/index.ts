@@ -13,12 +13,18 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: "/about",
         name: "About",
-        component: () => import("../views/about/index.vue")
+        component: () => import("../views/about/index.vue"),
+        meta: {
+            isNav: true
+        }
     },
     {
         path: "/home",
         name: "Home",
-        component: () => import("../views/home/index.vue")
+        component: () => import("../views/home/index.vue"),
+        meta: {
+            isNav: true
+        }
     }
 ];
 

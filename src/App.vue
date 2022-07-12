@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import Layout from '@/layout/index.vue'
 import { mainStore } from './store';
 const store = mainStore()
-
 </script>
 
 <template>
 <div class="main" :class="store.themeSelect">
-  <RouterView></RouterView>
+  <Layout v-if="$route.meta.isNav"></Layout>
+  <RouterView v-else></RouterView>
 </div>
 </template>
 
@@ -22,6 +23,7 @@ body{
     left: 50%;
     transform: translate(-50%,-50%);
     border-radius: 5px;
+    overflow: hidden;
   }
 }
 </style>
