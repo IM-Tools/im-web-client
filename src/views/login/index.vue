@@ -132,10 +132,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
 }
 // 注册获取邮箱验证码
 const getCodeClick = () => {
-  const formData = new FormData()
-  formData.append('email',registerInfo.email)
-  formData.append('email_type','1')
-  sendEmailCode(formData).then( res => {
+  // const formData = new FormData()
+  // formData.append('email',registerInfo.email)
+  // formData.append('email_type',1)
+  sendEmailCode({
+    email: registerInfo.email,
+    email_type: 1
+  }).then( res => {
     console.log(res);
     ElMessage({
       message: '验证码已发送至邮箱，请注意查收！',

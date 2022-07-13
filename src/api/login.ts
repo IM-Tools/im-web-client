@@ -1,5 +1,4 @@
 import request from './request'
-import qs from 'qs'
 // 登录接口
 export function login(data: Object) {
   return request.post('/api/auth/login', data)

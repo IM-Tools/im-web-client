@@ -1,5 +1,5 @@
 import axios from 'axios'
-// import { Message } from 'element-ui'
+import { ElMessage } from 'element-plus'
 // import router from '@/router'
 // import store from '@/store'
 console.log('import.meta.env.NODE_ENV',import.meta.env.VITE_APP_NODE_ENV);
@@ -36,6 +36,13 @@ request.interceptors.request.use((config: any) => {
     if (method === 'get') {
       config.params = data
     }
+    if(method === 'post'){
+      const formData = new FormData()
+      Object.keys(data).forEach((item) => {
+        formData.append(item,data[item])
+      })
+      config.data = formData
+    }
   }
 
   return config
@@ -50,38 +57,18 @@ function successCallback(response: any) {
   const { data, code, msg } = res
   if (res.status === true) {
     return data
-  } else if (code === 1005 || (code === 2001 && localStorage.getItem('token'))) {
-    // // 未登入
-    // localStorage.removeItem('token')
-    // localStorage.removeItem('client_id')
-    // localStorage.removeItem('openvidu_url')
-    // localStorage.removeItem('userInfo')
-    // const { ipcRenderer } = require('electron')
-    // ipcRenderer.invoke('change-window', { isChange: true })
-    // router.push({ path: '/login' })
   } else {
-    // Message.error(`${msg}(${code})`)
-    // Message({
-    //   type: 'error',
-    //   message: msg,
-    //   customClass: 'message-box'
-    // })
     return Promise.reject(res)
   }
 }
 // 请求错误回调
 function errorCallback(error: any) {
-  // Message.error(
-  //   error.response
-  //     ? `网络请求错误，错误码：${error.response.code}`
-  //     : '网络请求超时，请稍后重试，或联系技术人员！'
-  // )
-  // Message({
-  //   type: 'error',
-  //   message: error.response
-  //     ? `网络请求错误，错误码：${error.response.code}`
-  //     : '网络请求超时，请稍后重试，或联系技术人员！'
-  // })
+  const err = JSON.parse(error.request.response)
+  ElMessage({
+    message: err.message,
+    type: 'error',
+  })
+  
   return Promise.reject(error)
 }
 // 响应拦截
