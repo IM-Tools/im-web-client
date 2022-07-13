@@ -13,7 +13,10 @@
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "paths": {
-      "@/*":["./src/*"]
+      "@/*":["./src/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/store/*": ["./src/store/*"],
+      "@/pinia/*": ["./src/pinia/*"], 
     } 
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

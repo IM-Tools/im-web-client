@@ -16,13 +16,8 @@ const store = mainStore()
 body{
   background-color: @mainColor;
   .main{
-    position: absolute;
-    width: 1200px;
-    height: 700px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    border-radius: 5px;
+    width: 100%;
+    height: 100vh;
     overflow: hidden;
   }
 }

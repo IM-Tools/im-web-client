@@ -18,7 +18,10 @@ export default defineConfig(({ mode }) => {
       open: false,
       https: false,
       proxy: {
-        '/api': env.VITE_APP_BASE_API,
+        '/api': {
+          target: env.VITE_APP_BASE_API,
+          rewrite: (path) => path.replace(/^\/api/, '')
+        }
       },
     },
   }

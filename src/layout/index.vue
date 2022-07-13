@@ -1,5 +1,12 @@
 <script setup lang="ts">
-
+import { User, ChatDotRound } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const navClick = (path: string) => {
+  router.push({
+    path: path
+  })
+}
 </script>
 
 <template>
@@ -11,12 +18,12 @@
       </div>
     </div>
     <ul>
-      <li><el-icon><ChatDotRound /></el-icon></li>
-      <li><el-icon><User /></el-icon></li>
+      <li @click="navClick('session')" :class="{select: $route.path === '/session'}"><el-icon><ChatDotRound /></el-icon></li>
+      <li @click="navClick('address')" :class="{select: $route.path === '/address'}"><el-icon><User /></el-icon></li>
     </ul>
-    <div class="tool">
+    <!-- <div class="tool">
       设置
-    </div>
+    </div> -->
   </div>
   <div class="content">
     <RouterView></RouterView>
@@ -30,24 +37,40 @@
   width: 100%;
   height: 100%;
   .nav{
-    width: 60px;
+    width: 55px;
     height: 100%;
     background-color: var(--nav-color);
     .avatar{
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: 5px;
       padding: 3px;
       background-color: #afb5fa;
       box-sizing: border-box;
-      margin: 10px 5px;
+      margin: 10px auto;
+      overflow: hidden;
       img{
         width: 100%;
         height: 100%;
-        border-radius: 50%;
+      }
+    }
+    ul{
+      li{
+        width: 40px;
+        height: 40px;
+        // background-color: #cccff5;
+        font-size: 26px;
+        margin: 5px auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--icon-color);
+      }
+      .select{
+        color: var(--icon-select-color);
       }
     }
   }

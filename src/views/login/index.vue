@@ -8,6 +8,8 @@ import { ElMessage } from 'element-plus'
 import { mainStore } from '@/store';
 // router
 import { useRouter } from 'vue-router'
+// 接口
+import { login,registerede,sendEmailCode } from '@/api/login'
 const router = useRouter()
 const store = mainStore()
 // 用户账号密码
@@ -46,7 +48,7 @@ const rules = reactive({
 })
 // 注册账号信息
 const registerInfo = reactive({
-  email: '',
+  email: '1752837807@qq.com',
   name: '',
   password: '',
   password_repeat: '',
@@ -113,9 +115,14 @@ const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      console.log('submit!')
-      router.push({
-        path: '/'
+      login({
+        email: userInfo.account,
+        password: userInfo.password
+      }).then( (res: any) => {
+        console.log(res);
+        router.push({
+          path: '/'
+        })
       })
     } else {
       console.log('error submit!')
@@ -123,18 +130,34 @@ const submitForm = (formEl: FormInstance | undefined) => {
     }
   })
 }
+// 注册获取邮箱验证码
+const getCodeClick = () => {
+  const formData = new FormData()
+  formData.append('email',registerInfo.email)
+  formData.append('email_type','1')
+  sendEmailCode(formData).then( res => {
+    console.log(res);
+    ElMessage({
+      message: '验证码已发送至邮箱，请注意查收！',
+      type: 'success',
+    })
+  })
+}
 // 确认注册
 const submitRegisterForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      ElMessage({
-        message: '注册成功，点击直接登录！',
-        type: 'success',
+      registerede(registerInfo).then( res => {
+        console.log(res);
+        ElMessage({
+          message: '注册成功，点击直接登录！',
+          type: 'success',
+        })
+        isReverse.value = false
+        userInfo.account = registerInfo.email
+        userInfo.password = registerInfo.password
       })
-      isReverse.value = false
-      userInfo.account = registerInfo.email
-      userInfo.password = registerInfo.password
     } else {
       console.log('error submit!')
       return false
@@ -258,7 +281,7 @@ const themeClick = (theme: string) => {
                   clearable
                 />
                 <div class="btn">
-                  <el-button type="primary" @click="submitForm(ruleFormRef)"
+                  <el-button type="primary" @click="getCodeClick"
                     >获取验证码</el-button
                   >
                 </div>

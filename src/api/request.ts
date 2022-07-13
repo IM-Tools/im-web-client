@@ -2,7 +2,9 @@ import axios from 'axios'
 // import { Message } from 'element-ui'
 // import router from '@/router'
 // import store from '@/store'
-const baseURL = import.meta.env.NODE_ENV === 'production' ? import.meta.env.VITE_APP_BASE_API : '/api'
+console.log('import.meta.env.NODE_ENV',import.meta.env.VITE_APP_NODE_ENV);
+
+const baseURL = import.meta.env.VITE_APP_NODE_ENV === 'production' ? import.meta.env.VITE_APP_BASE_API : '/api'
 
 // 一般接口请求
 const request = axios.create({
@@ -20,12 +22,15 @@ request.interceptors.request.use((config: any) => {
   if (Object.prototype.toString.call(data) === '[object FormData]') {
     console.log('文件上传')
   } else {
+    // config.headers['content-type'] = 'application/x-www-form-urlencoded'
     data = { ...data }
     Object.keys(data).forEach((item) => {
       if (data[item] === undefined || data[item] === null || data[item] === '') {
         delete data[item]
       }
     })
+    console.log(data);
+    
     config.data = data
     // get请求转参数key为params
     if (method === 'get') {

@@ -25,6 +25,22 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
             isNav: true
         }
+    },
+    {
+        path: "/address",
+        name: "Address",
+        component: () => import("../views/address/index.vue"),
+        meta: {
+            isNav: true
+        }
+    },
+    {
+        path: "/session",
+        name: "Session",
+        component: () => import("../views/session/index.vue"),
+        meta: {
+            isNav: true
+        }
     }
 ];
 
