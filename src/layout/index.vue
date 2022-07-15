@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { User, ChatDotRound } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import { mainStore } from '@/store';
+// 获取用户信息
+const store = mainStore()
+const userInfo = store.userInfo
 const router = useRouter()
+// 路由跳转
 const navClick = (path: string) => {
   router.push({
     path: path
@@ -14,7 +19,7 @@ const navClick = (path: string) => {
   <div class="nav">
     <div class="avatar">
       <div class="img">
-        <img src="@/assets/images/logo.png" alt="">
+        <img :src="userInfo.avatar" alt="">
       </div>
     </div>
     <ul>

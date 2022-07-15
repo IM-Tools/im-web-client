@@ -120,6 +120,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
         password: userInfo.password
       }).then( (res: any) => {
         console.log(res);
+        store.setToken(res.token)
+        const info = {
+          avatar: res.avatar,
+          name: res.name,
+          email: res.email,
+          uid: res.uid,
+          id: res.id,
+          expire_time: res.expire_time
+        }
+        store.setUserInfo(info)
         router.push({
           path: '/'
         })
@@ -132,9 +142,6 @@ const submitForm = (formEl: FormInstance | undefined) => {
 }
 // 注册获取邮箱验证码
 const getCodeClick = () => {
-  // const formData = new FormData()
-  // formData.append('email',registerInfo.email)
-  // formData.append('email_type',1)
   sendEmailCode({
     email: registerInfo.email,
     email_type: 1

@@ -50,12 +50,14 @@ request.interceptors.request.use((config: any) => {
 
 // 请求成功回调
 function successCallback(response: any) {
+  console.log(response);
+  
   if (Object.prototype.toString.apply(response.data) === '[object Blob]') {
     return response.data
   }
   const res = response.data
   const { data, code, msg } = res
-  if (res.status === true) {
+  if (res.code === 200) {
     return data
   } else {
     return Promise.reject(res)
