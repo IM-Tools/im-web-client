@@ -219,7 +219,7 @@ const themeClick = (theme: string) => {
         </div>
         <div class="tool">
           <div class="login-btn">
-            <el-button type="primary" @click="submitForm(ruleFormRef)"
+            <el-button color="#5865F2" type="primary" @click="submitForm(ruleFormRef)"
               >登录</el-button
             >
           </div>
@@ -301,7 +301,7 @@ const themeClick = (theme: string) => {
         </div>
         <div class="tool">
           <div class="login-btn">
-            <el-button type="primary" @click="submitRegisterForm(registerRef)"
+            <el-button color="#5865F2" type="primary" @click="submitRegisterForm(registerRef)"
               >确认注册</el-button
             >
           </div>
@@ -352,7 +352,7 @@ const themeClick = (theme: string) => {
       width: 65px;
       height: 65px;
       margin: 10px auto 10px;
-      border-radius: 5px;
+      border-radius: 90px;
       overflow: hidden;
       background-color: #d5d8f8;
       display: flex;
