@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { User, ChatDotRound } from '@element-plus/icons-vue'
+import { User, ChatDotRound,Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { mainStore } from '@/store';
 // 获取用户信息
@@ -25,6 +25,7 @@ const navClick = (path: string) => {
     <ul>
       <li @click="navClick('session')" :class="{select: $route.path === '/session'}"><el-icon><ChatDotRound /></el-icon></li>
       <li @click="navClick('address')" :class="{select: $route.path === '/address'}"><el-icon><User /></el-icon></li>
+      <li @click="navClick('logout')" :class="{select: $route.path === '/address'}"><el-icon><Setting /></el-icon></li>
     </ul>
     <!-- <div class="tool">
       设置

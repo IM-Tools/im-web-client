@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage,ElNotification } from 'element-plus'
 // import router from '@/router'
 // import store from '@/store'
 console.log('import.meta.env.NODE_ENV',import.meta.env.VITE_APP_NODE_ENV);
@@ -9,7 +9,7 @@ const baseURL = import.meta.env.VITE_APP_NODE_ENV === 'production' ? import.meta
 // 一般接口请求
 const request = axios.create({
   baseURL: baseURL,
-  timeout: 20000
+  timeout: 20000,
 })
 
 // 请求前拦截
@@ -17,7 +17,7 @@ request.interceptors.request.use((config: any) => {
   let { data = {}, method } = config
   const token = localStorage.getItem('token')
   if (token) {
-    config.headers['m-token'] = token
+    config.headers['Authorization'] = 'Bearer '+token
   }
   if (Object.prototype.toString.call(data) === '[object FormData]') {
     console.log('文件上传')
@@ -60,6 +60,11 @@ function successCallback(response: any) {
   if (res.code === 200) {
     return data
   } else {
+    ElNotification({
+      title: 'Warning',
+      message: res.message,
+      type: 'warning',
+    })
     return Promise.reject(res)
   }
 }

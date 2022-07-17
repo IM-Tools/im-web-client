@@ -1,13 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from "vue";
+import { sessionList } from "@/api/session";
+import { mainStore } from "@/store";
 // icon图标
-import { Search, Plus, Picture } from '@element-plus/icons-vue'
+import { Search, Plus, Picture } from "@element-plus/icons-vue";
+import { onMounted } from "@vue/runtime-core";
+const store = mainStore();
+const data = reactive({
+  sessionList: store.sessionInfo,
+});
 // 搜索内容
-const searchCnt = ref<string>()
+const searchCnt = ref<string>();
 // 阻止input默认行为
-const handleKeyDown = (e: any) =>  {
-  e.preventDefault()
-}
+const handleKeyDown = (e: any) => {
+  e.preventDefault();
+};
+onMounted(async () => {
+  //getSessions()
+});
+const getSessions = () => {
+  sessionList({}).then((response) => {
+    console.log(response.data);
+    data.sessionList = response.data;
+  });
+};
 </script>
 
 <template>
@@ -27,82 +43,25 @@ const handleKeyDown = (e: any) =>  {
         </div>
       </div>
       <ul>
-        <li class="select">
+        <li
+          v-for="(item, key) in data.sessionList"
+          :key="key"
+          :class="item.top_status == 1 ? 'select' : ''"
+        >
           <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
+            <img :src="item.Users.avatar" alt="" />
+            <span class="online"></span>
           </div>
           <div class="user">
             <div class="name">
-              张三
+              {{ item.Users.name }}
               <div class="time">15:11</div>
             </div>
             <div class="message">你吗喊你回家吃饭了你吗喊你回家吃饭了</div>
           </div>
         </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三<div class="time">15:11</div></div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="user">
-            <div class="name">张三</div>
-            <div class="message">你吗喊你回家吃饭了</div>
-          </div>
-        </li>
-      </ul>
+
+     </ul>
     </div>
     <div class="session-cnt">
       <div class="chat-top"></div>
@@ -113,7 +72,8 @@ const handleKeyDown = (e: any) =>  {
           </div>
           <div class="chat-msg">
             <div class="chat-name">张三</div>
-            <div class="chat-cnt">的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
+            <div class="chat-cnt">
+              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
@@ -131,7 +91,9 @@ const handleKeyDown = (e: any) =>  {
             <div class="chat-name">
               <span>张三</span>
             </div>
-            <div class="chat-cnt">的可能每个看到你可是个看到过开始了麻烦的可能每</div>
+            <div class="chat-cnt">
+              的可能每个看到你可是个看到过开始了麻烦的可能每
+            </div>
           </div>
         </li>
         <li>
@@ -141,7 +103,7 @@ const handleKeyDown = (e: any) =>  {
           <div class="chat-msg">
             <div class="chat-name">张三</div>
             <div class="chat-img">
-              <img src="@/assets/images/login.png" alt="">
+              <img src="@/assets/images/login.png" alt="" />
             </div>
           </div>
         </li>
@@ -151,7 +113,8 @@ const handleKeyDown = (e: any) =>  {
           </div>
           <div class="chat-msg">
             <div class="chat-name">张三</div>
-            <div class="chat-cnt">的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
+            <div class="chat-cnt">
+              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
               的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
@@ -177,7 +140,7 @@ const handleKeyDown = (e: any) =>  {
           <div class="chat-msg">
             <div class="chat-name">张三</div>
             <div class="chat-img">
-              <img src="@/assets/images/login.png" alt="">
+              <img src="@/assets/images/login.png" alt="" />
             </div>
           </div>
         </li>
@@ -185,9 +148,15 @@ const handleKeyDown = (e: any) =>  {
       <div class="send">
         <div class="tool">
           <ul>
-            <li><el-icon><Picture /></el-icon></li>
-            <li><el-icon><Picture /></el-icon></li>
-            <li><el-icon><Picture /></el-icon></li>
+            <li>
+              <el-icon><Picture /></el-icon>
+            </li>
+            <li>
+              <el-icon><Picture /></el-icon>
+            </li>
+            <li>
+              <el-icon><Picture /></el-icon>
+            </li>
           </ul>
         </div>
         <div class="chat-content">
@@ -245,7 +214,7 @@ const handleKeyDown = (e: any) =>  {
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        &:hover{
+        &:hover {
           background-color: #e2e2e2;
         }
         .img {
@@ -253,9 +222,37 @@ const handleKeyDown = (e: any) =>  {
           height: 50px;
           overflow: hidden;
           background-color: #e3e4e6;
+          border-radius: 5px;
+          position: relative;
           img {
             width: 100%;
             height: 100%;
+            position: absolute;
+          
+          }
+          .online {
+            width: 10px;
+            height: 10px;
+            display: block;
+            position: absolute;
+            text-align: center;
+            border-radius: 90px;
+            border: solid 2px #fff;
+            bottom: 0px;
+            right: 0px;
+            background-color: #3bd821 !important;
+          }
+           .offline {
+            width: 10px;
+            height: 10px;
+            display: block;
+            position: absolute;
+            text-align: center;
+            border-radius: 90px;
+            border: solid 2px #fff;
+            bottom: 0px;
+            right: 0px;
+            background-color: #ccced1 !important;
           }
         }
         .user {
@@ -268,7 +265,7 @@ const handleKeyDown = (e: any) =>  {
             font-weight: 700;
             display: flex;
             justify-content: space-between;
-            .time{
+            .time {
               font-size: 14px;
               color: #777;
               font-weight: 500;
@@ -294,37 +291,37 @@ const handleKeyDown = (e: any) =>  {
     height: 100%;
     background-color: #f9f9f9;
     border-left: 1px solid #e8eaec;
-    .chat-top{
+    .chat-top {
       height: 50px;
       width: 100%;
       border-bottom: 1px solid #e8eaec;
       box-sizing: border-box;
     }
-    &>ul{
+    & > ul {
       width: 100%;
       height: calc(100% - 220px);
       padding: 20px 10px;
       box-sizing: border-box;
       overflow-y: auto;
-      li{
+      li {
         display: flex;
         margin-bottom: 15px;
-        .avatar{
+        .avatar {
           width: 45px;
           height: 45px;
           border-radius: 3px;
           overflow: hidden;
           background-color: #eeecec;
-          img{
+          img {
             width: 100%;
             height: 100%;
           }
         }
-        .chat-msg{
+        .chat-msg {
           padding: 0 10px;
           width: 70%;
           // background-color: red;
-          .chat-name{
+          .chat-name {
             width: 100%;
             font-size: 14px;
             color: #555;
@@ -332,7 +329,7 @@ const handleKeyDown = (e: any) =>  {
             margin-top: -10px;
             margin-bottom: 3px;
           }
-          .chat-cnt{
+          .chat-cnt {
             font-size: 16px;
             color: #333;
             line-height: 28px;
@@ -342,22 +339,22 @@ const handleKeyDown = (e: any) =>  {
             box-shadow: 0 0 5px #eee;
             display: inline-block;
           }
-          .chat-img{
+          .chat-img {
             width: 100%;
             overflow: hidden;
-            img{
+            img {
               max-width: 100%;
             }
           }
         }
       }
-      .own{
+      .own {
         flex-direction: row-reverse;
-        .chat-msg{
+        .chat-msg {
           display: flex;
           flex-wrap: wrap;
           justify-content: flex-end;
-          .chat-cnt{
+          .chat-cnt {
             font-size: 16px;
             color: #333;
             line-height: 28px;
@@ -368,33 +365,33 @@ const handleKeyDown = (e: any) =>  {
             display: inline-block;
             color: #fff;
           }
-          .chat-name{
+          .chat-name {
             display: flex;
             justify-content: flex-end;
           }
-          .chat-img{
+          .chat-img {
             display: flex;
             justify-content: flex-end;
           }
         }
       }
     }
-    .send{
+    .send {
       width: 100%;
       height: 170px;
       box-sizing: border-box;
       border-top: 1px solid #e8eaec;
       background-color: #f9f9f9;
-      .tool{
+      .tool {
         width: 100%;
         box-sizing: border-box;
         padding: 0 20px;
         height: 30px;
         display: flex;
         align-items: center;
-        ul{
+        ul {
           display: flex;
-          li{
+          li {
             margin-top: 6px;
             cursor: pointer;
             width: 24px;
@@ -408,11 +405,11 @@ const handleKeyDown = (e: any) =>  {
           }
         }
       }
-      .chat-content{
+      .chat-content {
         width: 100%;
         height: 95px;
         background-color: pink;
-        textarea{
+        textarea {
           width: 100%;
           height: 100%;
           border: none;
@@ -424,13 +421,13 @@ const handleKeyDown = (e: any) =>  {
           background-color: #f9f9f9;
         }
       }
-      .btn{
+      .btn {
         width: 100%;
         height: 45px;
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        span{
+        span {
           display: inline-block;
           height: 30px;
           line-height: 30px;
