@@ -43,9 +43,17 @@ export const mainStore = defineStore('main', {
       this.sessionInfo = data
     },
     async getSessionInfo(params: Object) {
-      sessionList(params).then((response)=>{
-       this.setSessionInfo(response)
+      sessionList(params).then((response) => {
+        this.setSessionInfo(response)
       })
+    },
+    logOut(){
+      this.token = ''
+      this.userInfo = {}
+      this.sessionInfo = {}
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      localStorage.removeItem('sessionInfo')
     }
   },
 })

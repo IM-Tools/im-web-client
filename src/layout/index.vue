@@ -12,6 +12,13 @@ const navClick = (path: string) => {
     path: path
   })
 }
+// 退出登录
+const logOutClick = () => {
+  store.logOut()
+  router.push({
+    path: '/login'
+  })
+}
 </script>
 
 <template>
@@ -23,13 +30,12 @@ const navClick = (path: string) => {
       </div>
     </div>
     <ul>
-      <li @click="navClick('session')" :class="{select: $route.path === '/session'}"><el-icon><ChatDotRound /></el-icon></li>
-      <li @click="navClick('address')" :class="{select: $route.path === '/address'}"><el-icon><User /></el-icon></li>
-      <li @click="navClick('logout')" :class="{select: $route.path === '/address'}"><el-icon><Setting /></el-icon></li>
+      <li title="聊天" @click="navClick('/session')" :class="{select: $route.path === '/session'}"><el-icon><ChatDotRound /></el-icon></li>
+      <li title="通讯录" @click="navClick('/address')" :class="{select: $route.path === '/address'}"><el-icon><User /></el-icon></li>
     </ul>
-    <!-- <div class="tool">
-      设置
-    </div> -->
+    <div class="tool" title="退出登录" @click="logOutClick">
+      <el-icon><Setting /></el-icon>
+    </div>
   </div>
   <div class="content">
     <RouterView></RouterView>
@@ -46,6 +52,7 @@ const navClick = (path: string) => {
     width: 55px;
     height: 100%;
     background-color: var(--nav-color);
+    position: relative;
     .avatar{
       width: 40px;
       height: 40px;
@@ -76,6 +83,23 @@ const navClick = (path: string) => {
         color: var(--icon-color);
       }
       .select{
+        color: var(--icon-select-color);
+      }
+    }
+    .tool{
+      position: absolute;
+      left: 50%;
+      bottom: 5px;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      font-size: 26px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--icon-color);
+      cursor: pointer;
+      &:hover{
         color: var(--icon-select-color);
       }
     }

@@ -60,8 +60,7 @@ const getSessions = () => {
             <div class="message">你吗喊你回家吃饭了你吗喊你回家吃饭了</div>
           </div>
         </li>
-
-     </ul>
+    </ul>
     </div>
     <div class="session-cnt">
       <div class="chat-top"></div>
