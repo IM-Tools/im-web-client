@@ -13,7 +13,7 @@ function initWebsocket(openBack: Function, closeBack: Function){
   if(wsObj){
     return
   }
-  const { status, data, send, open, close } = useWebSocket('ws://websocketurl', {
+  const { status, data, send, open, close } = useWebSocket(import.meta.env.VITE_APP_WS_API + localStorage.getItem('token'), {
     autoReconnect: {
       retries: 3,
       delay: 1500,
