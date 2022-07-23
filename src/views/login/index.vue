@@ -14,8 +14,8 @@ const router = useRouter()
 const store = mainStore()
 // 用户账号密码
 const userInfo = reactive({
-  account: '',
-  password: '',
+  account: '1752837807@qq.com',
+  password: '123456',
 })
 // 是否注册
 const isReverse = ref<Boolean>(false)
@@ -48,7 +48,7 @@ const rules = reactive({
 })
 // 注册账号信息
 const registerInfo = reactive({
-  email: '1752837807@qq.com',
+  email: '',
   name: '',
   password: '',
   password_repeat: '',

@@ -1,29 +1,28 @@
 <script setup lang="ts">
-import { ref, reactive } from "vue";
-import { sessionList } from "@/api/session";
+import { ref } from "vue";
 import { mainStore } from "@/store";
 // icon图标
 import { Search, Plus, Picture } from "@element-plus/icons-vue";
-import { onMounted } from "@vue/runtime-core";
+import { computed } from "@vue/reactivity";
 const store = mainStore();
-const data = reactive({
-  sessionList: store.sessionInfo,
-});
 // 搜索内容
 const searchCnt = ref<string>();
 // 阻止input默认行为
 const handleKeyDown = (e: any) => {
   e.preventDefault();
 };
-onMounted(async () => {
-  //getSessions()
-});
-const getSessions = () => {
-  sessionList({}).then((response) => {
-    console.log(response.data);
-    data.sessionList = response.data;
-  });
-};
+// 获得会话列表
+store.getSessionInfo()
+const sessionList = computed( (): any => store.sessionList)
+
+// 选中的会话id
+const selectId = ref<number>(-1)
+console.log('会话列表',sessionList.value);
+
+// 会话点击事件
+const sessionClick = (id: number) => {
+  selectId.value = id
+}
 </script>
 
 <template>
@@ -44,17 +43,18 @@ const getSessions = () => {
       </div>
       <ul>
         <li
-          v-for="(item, key) in data.sessionList"
-          :key="key"
-          :class="item.top_status == 1 ? 'select' : ''"
+          v-for="item in sessionList"
+          :key="item.id"
+          @click="sessionClick(item.id)"
+          :class="{select: item.id === selectId,sessionTop: item.top_status == 1}"
         >
           <div class="img">
-            <img :src="item.Users.avatar" alt="" />
-            <span class="online"></span>
+            <img :src="item.avatar" alt="" />
+            <span :class="{online: item.top_status == 1}"></span>
           </div>
           <div class="user">
             <div class="name">
-              {{ item.Users.name }}
+              {{ item.note || item.name }}
               <div class="time">15:11</div>
             </div>
             <div class="message">你吗喊你回家吃饭了你吗喊你回家吃饭了</div>
@@ -280,9 +280,13 @@ const getSessions = () => {
           }
         }
       }
+      .sessionTop{
+        background-color: #eeeeee !important;
+      }
       .select {
         background-color: #cfcfcf !important;
       }
+      
     }
   }
   .session-cnt {
