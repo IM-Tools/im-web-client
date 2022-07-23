@@ -23,6 +23,7 @@ export const mainStore = defineStore('main', {
       sessionInfo: localStorage.getItem('sessionInfo')
         ? JSON.parse(localStorage.getItem('sessionInfo') as string)
         : {},
+      sessionList: [],
     }
   },
   actions: {
@@ -42,10 +43,9 @@ export const mainStore = defineStore('main', {
       localStorage.setItem('sessionInfo', JSON.stringify(data))
       this.sessionInfo = data
     },
-    async getSessionInfo(params: Object) {
-      sessionList(params).then((response) => {
-        this.setSessionInfo(response)
-      })
+    async getSessionInfo() {
+      const res = await sessionList()
+      this.sessionList = res as any
     },
     logOut(){
       this.token = ''

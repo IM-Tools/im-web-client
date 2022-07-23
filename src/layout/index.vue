@@ -2,6 +2,7 @@
 import { User, ChatDotRound,Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { mainStore } from '@/store';
+import { initWebsocket } from '@/utils/socket'
 // 获取用户信息
 const store = mainStore()
 const userInfo = store.userInfo
@@ -19,6 +20,12 @@ const logOutClick = () => {
     path: '/login'
   })
 }
+// websocket 链接
+initWebsocket(() => {
+  console.log('连接成功');
+},() => {
+  console.log('连接失败');
+})
 </script>
 
 <template>
