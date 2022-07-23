@@ -33,7 +33,7 @@ export const mainStore = defineStore('main', {
     },
     setToken(token: string) {
       localStorage.setItem('token', token)
-      this.themeSelect = token
+      this.token = token
     },
     async setUserInfo(data: Object) {
       localStorage.setItem('userInfo', JSON.stringify(data))
