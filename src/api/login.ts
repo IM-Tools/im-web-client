@@ -6,7 +6,7 @@ interface loginData {
   password: string | number
 }
 export function login(data: loginData) {
-  return request.post('/api/auth/login', data)
+  return request.post('/auth/login', data)
 }
 //注册
 interface registerData {
@@ -18,7 +18,7 @@ interface registerData {
   email_type?:string | number,
 }
 export function registerede(data: registerData) {
-  return request.post('/api/auth/registered', data)
+  return request.post('/auth/registered', data)
 }
 // 邮箱验证码
 interface emailData {
@@ -26,6 +26,6 @@ interface emailData {
   email_type: string | number
 }
 export function sendEmailCode(data: emailData) {
-  return request.post('/api/auth/sendEmailCode', data)
+  return request.post('/auth/sendEmailCode', data)
 }
 
