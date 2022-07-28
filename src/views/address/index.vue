@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 // icon图标
 import { Search, Plus } from '@element-plus/icons-vue'
-import { friendRecordList,friendList,recordFriend} from '@/api/friend'
+import { friendRecordList, friendList, recordFriend } from '@/api/friend'
+import { requestListType, userType } from '@/api/friend/type'
 // 搜索内容
 const searchCnt = ref<string>()
 const selectName = ref<string>('addFriend')
@@ -10,19 +11,20 @@ const selectName = ref<string>('addFriend')
 const userClick = () => {
   selectName.value = 'userList'
 }
-const requestList = ref([])
-const addFriendClick = () => {
+const requestList = ref<requestListType<userType>[]>([])
+const addFriendClick = async() => {
   selectName.value = 'addFriend'
   // 获得好友请求列表
-  friendRecordList().then( res => {
-    console.log(res);
+  friendRecordList().then((res) => {
+    console.log(res)
+    requestList.value = res
   })
 }
 
 // 获取好友列表
 const getFriendList = () => {
-  friendList().then( res => {
-    console.log(res);
+  friendList().then((res) => {
+    console.log(res)
   })
 }
 getFriendList()
@@ -47,7 +49,10 @@ getFriendList()
       <div class="list">
         <div class="new-friend" @click="addFriendClick">
           <p>新的朋友</p>
-          <div class="add-friend" :class="{select: selectName === 'addFriend'}">
+          <div
+            class="add-friend"
+            :class="{ select: selectName === 'addFriend' }"
+          >
             <div class="icon">
               <svg
                 t="1658910042098"
@@ -69,7 +74,10 @@ getFriendList()
           </div>
         </div>
         <ul>
-          <li :class="{select: selectName !== 'addFriend'}" @click="userClick">
+          <li
+            :class="{ select: selectName !== 'addFriend' }"
+            @click="userClick"
+          >
             <div class="img">
               <img src="@/assets/images/logo.png" alt="" />
             </div>
@@ -141,7 +149,7 @@ getFriendList()
           <ul>
             <li>
               <div class="img">
-                <img src="@/assets/images/logo.png" alt="">
+                <img src="@/assets/images/logo.png" alt="" />
               </div>
               <div class="cnt">
                 <div class="name">这可是公司</div>
@@ -154,7 +162,7 @@ getFriendList()
             </li>
             <li>
               <div class="img">
-                <img src="@/assets/images/logo.png" alt="">
+                <img src="@/assets/images/logo.png" alt="" />
               </div>
               <div class="cnt">
                 <div class="name">这可是公司</div>
@@ -206,18 +214,18 @@ getFriendList()
       overflow-y: auto;
       padding: 0 0 10px;
       box-sizing: border-box;
-      .new-friend{
+      .new-friend {
         width: 100%;
         height: 80px;
         margin-top: 10px;
-        &>p{
+        & > p {
           font-size: 12px;
           color: #999;
           line-height: 20px;
           box-sizing: border-box;
           padding: 0 15px;
         }
-        .add-friend{
+        .add-friend {
           display: flex;
           align-items: center;
           width: 100%;
@@ -225,10 +233,10 @@ getFriendList()
           box-sizing: border-box;
           padding: 0 15px;
           cursor: pointer;
-          &:hover{
+          &:hover {
             background-color: #e2e2e2;
           }
-          .icon{
+          .icon {
             width: 40px;
             height: 40px;
             display: flex;
@@ -236,15 +244,15 @@ getFriendList()
             justify-content: center;
             background-color: #cf7f23;
             border-radius: 3px;
-            svg{
+            svg {
               width: 30px;
               height: 30px;
-              path{
+              path {
                 fill: #fff;
               }
             }
           }
-          p{
+          p {
             font-size: 16px;
             color: #333;
             padding-left: 10px;
@@ -362,31 +370,31 @@ getFriendList()
           margin-top: 20px;
         }
       }
-      .friend-request-list{
+      .friend-request-list {
         width: 100%;
-        .title{
+        .title {
           width: 100%;
           border-bottom: 1px solid #eee;
           height: 50px;
           line-height: 50px;
           font-size: 16px;
           color: #333;
-          h2{
+          h2 {
             font-weight: normal;
           }
         }
-        ul{
+        ul {
           width: 100%;
           box-sizing: border-box;
           padding: 0 30px;
-          li{
+          li {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
             height: 75px;
             border-bottom: 1px solid #eee;
-            .img{
+            .img {
               width: 55px;
               height: 55px;
               display: flex;
@@ -394,33 +402,34 @@ getFriendList()
               justify-content: space-between;
               background-color: #d1d4f5;
               border-radius: 3px;
-              img{
+              img {
                 width: 100%;
               }
             }
-            .cnt{
+            .cnt {
               flex: 1;
               margin: 0 10px;
-              .name{
+              .name {
                 width: 100%;
                 font-size: 14px;
                 color: #222;
                 line-height: 25px;
               }
-              .desc{
+              .desc {
                 font-size: 12px;
                 color: #666;
                 line-height: 20px;
               }
             }
-            .tool{
+            .tool {
               width: 80px;
               height: 60px;
               display: flex;
               flex-wrap: wrap;
               align-items: center;
               justify-content: center;
-              .agree,.cancel{
+              .agree,
+              .cancel {
                 width: 60px;
                 height: 26px;
                 text-align: center;
@@ -430,10 +439,10 @@ getFriendList()
                 color: #fff;
                 border-radius: 3px;
               }
-              .cancel{
+              .cancel {
                 background-color: #d3874a;
               }
-              p{
+              p {
                 font-size: 14px;
                 color: #555;
               }
