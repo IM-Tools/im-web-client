@@ -130,7 +130,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           expire_time: res.expire_time
         }
         store.setUserInfo(info)
-        store.getSessionInfo({})
+        store.getSessionInfo()
         router.push({
           path: '/'
         })

@@ -4,6 +4,7 @@ import { mainStore } from "@/store";
 // icon图标
 import { Search, Plus, Picture } from "@element-plus/icons-vue";
 import { computed } from "@vue/reactivity";
+import { chatMessage } from '@/api/chat'
 const store = mainStore();
 // 搜索内容
 const searchCnt = ref<string>();
@@ -14,14 +15,47 @@ const handleKeyDown = (e: any) => {
 // 获得会话列表
 store.getSessionInfo()
 const sessionList = computed( (): any => store.sessionList)
-
-// 选中的会话id
-const selectId = ref<number>(-1)
+// 获得聊天信息
+interface sessionData {
+  id: number,
+  name: string,
+  note: string,
+  created_at: string,
+  avatar: string,
+  top_time: string,
+  status: number, 
+  to_id: number, 
+  top_status: number, 
+  Users: Object, 
+}
+const getChatMsg = (session: sessionData) => {
+  chatMessage({
+    page: 1,
+    pageSize: 20,
+    to_id: session.to_id
+  }).then( res => {
+    console.log(res);
+    
+  })
+}
+// 选中的会话
+const session = ref<sessionData>({
+  id: -1,
+  name: '',
+  note: '',
+  created_at: '',
+  avatar: '',
+  top_time: '',
+  status: 0, 
+  to_id: -1, 
+  top_status: 0, 
+  Users: Object, 
+})
 console.log('会话列表',sessionList.value);
-
 // 会话点击事件
-const sessionClick = (id: number) => {
-  selectId.value = id
+const sessionClick = (session: sessionData) => {
+  session = session
+  getChatMsg(session)
 }
 </script>
 
@@ -45,8 +79,8 @@ const sessionClick = (id: number) => {
         <li
           v-for="item in sessionList"
           :key="item.id"
-          @click="sessionClick(item.id)"
-          :class="{select: item.id === selectId,sessionTop: item.top_status == 1}"
+          @click="sessionClick(item)"
+          :class="{select: item.id === session.id,sessionTop: item.top_status == 1}"
         >
           <div class="img">
             <img :src="item.avatar" alt="" />
