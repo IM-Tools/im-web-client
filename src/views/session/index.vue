@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref,reactive } from "vue";
 import { mainStore } from "@/store";
 // icon图标
 import { Search, Plus, Picture } from "@element-plus/icons-vue";
 import { computed } from "@vue/reactivity";
-import { chatMessage } from '@/api/chat'
+import { chatMessage,sendChatMessage } from '@/api/chat'
 const store = mainStore();
 // 搜索内容
 const searchCnt = ref<string>();
 // 阻止input默认行为
 const handleKeyDown = (e: any) => {
   e.preventDefault();
+  sendMsg()
 };
 // 获得会话列表
 store.getSessionInfo()
 const sessionList = computed( (): any => store.sessionList)
-// 获得聊天信息
+
 interface sessionData {
   id: number,
   name: string,
@@ -27,19 +28,21 @@ interface sessionData {
   to_id: number, 
   top_status: number, 
   Users: Object, 
+  value?: any
 }
+// 获得聊天信息
 const getChatMsg = (session: sessionData) => {
   chatMessage({
     page: 1,
     pageSize: 20,
     to_id: session.to_id
   }).then( res => {
-    console.log(res);
-    
+    console.log('私聊记录',res);
   })
 }
 // 选中的会话
-const session = ref<sessionData>({
+
+let sessionMsg = ref<sessionData>({
   id: -1,
   name: '',
   note: '',
@@ -54,8 +57,27 @@ const session = ref<sessionData>({
 console.log('会话列表',sessionList.value);
 // 会话点击事件
 const sessionClick = (session: sessionData) => {
-  session = session
+  console.log('会话点击事件',session);
+  sessionMsg.value = session
   getChatMsg(session)
+}
+// 发送聊天内容
+const sendContent = ref<string>()
+const sendMsg = () => {
+  console.log(sendContent.value);
+  if(!sendContent.value){
+    return
+  }
+  sendChatMessage({
+    msg_client_id: 123456,
+    msg_type: 1,
+    to_id: sessionMsg.value.to_id,
+    channel_type: 1,
+    message: sendContent.value
+  }).then( res => {
+    console.log(res);
+    
+  })
 }
 </script>
 
@@ -80,7 +102,7 @@ const sessionClick = (session: sessionData) => {
           v-for="item in sessionList"
           :key="item.id"
           @click="sessionClick(item)"
-          :class="{select: item.id === session.id,sessionTop: item.top_status == 1}"
+          :class="{select: item.id === sessionMsg.id,sessionTop: item.top_status == 1}"
         >
           <div class="img">
             <img :src="item.avatar" alt="" />
@@ -193,10 +215,10 @@ const sessionClick = (session: sessionData) => {
           </ul>
         </div>
         <div class="chat-content">
-          <textarea id="textarea" @keydown.enter="handleKeyDown"></textarea>
+          <textarea id="textarea" v-model="sendContent" @keydown.enter="handleKeyDown"></textarea>
         </div>
         <div class="btn">
-          <span>发送</span>
+          <span @click="sendMsg">发送</span>
         </div>
       </div>
     </div>
@@ -475,6 +497,7 @@ const sessionClick = (session: sessionData) => {
           background-color: #d1daf3;
           margin-right: 30px;
           color: #0139d3;
+          cursor: pointer;
         }
       }
     }
