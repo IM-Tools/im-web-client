@@ -3,7 +3,7 @@ import { ref } from 'vue'
 // icon图标
 import { Search, Plus } from '@element-plus/icons-vue'
 import { friendRecordList, friendList, recordFriend } from '@/api/friend'
-import { requestListType, userType } from '@/api/friend/type'
+import type { requestListType, userType } from '@/api/friend/type'
 // 搜索内容
 const searchCnt = ref<string>()
 const selectName = ref<string>('addFriend')
@@ -11,7 +11,7 @@ const selectName = ref<string>('addFriend')
 const userClick = () => {
   selectName.value = 'userList'
 }
-const requestList = ref<requestListType<userType>[]>([])
+const requestList = ref<requestListType<userType>>()
 const addFriendClick = async() => {
   selectName.value = 'addFriend'
   // 获得好友请求列表

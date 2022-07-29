@@ -1,11 +1,6 @@
 import axios from "axios";
 import type {AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { ElMessage,ElNotification } from 'element-plus'
-type Result<T> = {
-  code: number;
-  message: string;
-  result: T;
-};
 
 class Request {
   // axios 实例
@@ -72,7 +67,9 @@ class Request {
   public get<T = any>(
     url: string,
     config?: AxiosRequestConfig
-  ): Promise<T>{
+  ): Promise<T> {
+    console.log(333);
+    
     return this.instance.get(url, config);
   }
 
@@ -95,7 +92,7 @@ class Request {
   public delete<T = any>(
     url: string,
     config?: AxiosRequestConfig
-  ): Promise<T> {
+  ): Promise<T>{
     return this.instance.delete(url, config);
   }
 }
