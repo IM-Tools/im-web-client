@@ -1,5 +1,5 @@
 import request from '../request'
-import { recordFriend, requestListType, userType } from './type'
+import type { recordFriend, requestListType, userType } from './type'
 // 获取好友列表
 export function friendList(params?: Object) {
   return request.get('/friends', { params })
