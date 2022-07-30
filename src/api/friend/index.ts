@@ -1,5 +1,5 @@
 import request from '../request'
-import type { recordFriend, requestListType, userType } from './type'
+import type { recordFriend, requestListType, userType, friendRecordType, friendType} from './type'
 // 获取好友列表
 export function friendList(params?: Object) {
   return request.get('/friends', { params })
@@ -10,9 +10,9 @@ export function recordFriend(data: recordFriend) {
 }
 // 获取好友请求列表
 export function friendRecordList(params?: Object) {
-  return request.get<requestListType<userType>>('/friends/record', { params })
+  return request.get<requestListType<userType>[]>('/friends/record', { params })
 }
-// 同意/拒绝好友请求
-// export function friendRecordList(data: Object) {
-//   return request.get('/api/friends/record', {data})
-// }
+//同意/拒绝好友请求
+export function friendRecord(data: friendRecordType) {
+  return request.put<friendType<userType>[]>('/friends/record', data)
+}

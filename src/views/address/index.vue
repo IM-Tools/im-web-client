@@ -2,17 +2,30 @@
 import { ref } from 'vue'
 // icon图标
 import { Search, Plus } from '@element-plus/icons-vue'
-import { friendRecordList, friendList, recordFriend } from '@/api/friend'
-import type { requestListType, userType } from '@/api/friend/type'
+import {
+  friendRecordList,
+  friendList,
+  recordFriend,
+  friendRecord,
+} from '@/api/friend'
+import type {
+  requestListType,
+  userType,
+  friendType,
+} from '@/api/friend/type'
 // 搜索内容
 const searchCnt = ref<string>()
 const selectName = ref<string>('addFriend')
 // 用户点击事件
-const userClick = () => {
+const userMessage = ref<friendType<userType>>()
+const userClick = (user: friendType<userType>) => {
   selectName.value = 'userList'
+  userMessage.value = user
+  console.log(user);
 }
-const requestList = ref<requestListType<userType>>()
-const addFriendClick = async() => {
+// 请求列表
+const requestList = ref<requestListType<userType>[]>()
+const addFriendClick = async () => {
   selectName.value = 'addFriend'
   // 获得好友请求列表
   friendRecordList().then((res) => {
@@ -22,12 +35,29 @@ const addFriendClick = async() => {
 }
 
 // 获取好友列表
+const myFriendList = ref<friendType<userType>[]>()
 const getFriendList = () => {
   friendList().then((res) => {
+    myFriendList.value = res
     console.log(res)
   })
 }
 getFriendList()
+if (selectName.value === 'addFriend') {
+  addFriendClick()
+}
+
+// 同意/拒绝好友请求
+const friendRequestClick = (id: number, num: number) => {
+  friendRecord({
+    id: id,
+    status: num,
+  }).then((res) => {
+    console.log(res)
+    getFriendList()
+    addFriendClick()
+  })
+}
 </script>
 
 <template>
@@ -75,46 +105,15 @@ getFriendList()
         </div>
         <ul>
           <li
-            :class="{ select: selectName !== 'addFriend' }"
-            @click="userClick"
+            v-for="item in myFriendList" :key="item.id"
+            :class="{ select: selectName !== 'addFriend' &&  userMessage?.id === item.id}"
+            @click="userClick(item)"
           >
             <div class="img">
-              <img src="@/assets/images/logo.png" alt="" />
+              <img :src="item.Users.avatar" alt="" />
             </div>
             <div class="user">
-              <div class="name">张三</div>
-            </div>
-          </li>
-          <li>
-            <div class="img">
-              <img src="@/assets/images/logo.png" alt="" />
-            </div>
-            <div class="user">
-              <div class="name">张三</div>
-            </div>
-          </li>
-          <li>
-            <div class="img">
-              <img src="@/assets/images/logo.png" alt="" />
-            </div>
-            <div class="user">
-              <div class="name">张三</div>
-            </div>
-          </li>
-          <li>
-            <div class="img">
-              <img src="@/assets/images/logo.png" alt="" />
-            </div>
-            <div class="user">
-              <div class="name">张三</div>
-            </div>
-          </li>
-          <li>
-            <div class="img">
-              <img src="@/assets/images/logo.png" alt="" />
-            </div>
-            <div class="user">
-              <div class="name">张三</div>
+              <div class="name">{{item.Users.name}}</div>
             </div>
           </li>
         </ul>
@@ -126,12 +125,12 @@ getFriendList()
         <div class="box" v-if="selectName !== 'addFriend'">
           <div class="message">
             <div class="avatar">
-              <img src="@/assets/images/logo.png" alt="" />
+              <img :src="userMessage?.Users.avatar" alt="" />
             </div>
             <div class="user-info">
-              <div class="name">张三</div>
-              <div class="account">账号:123456789</div>
-              <div class="address">所在地</div>
+              <div class="name">{{userMessage?.Users.name}}</div>
+              <div class="account">邮箱：{{userMessage?.Users.email}}</div>
+              <div class="address">性别：{{['未知','男','女'][userMessage?.Users.sex as number]}}</div>
             </div>
           </div>
           <ul>
@@ -147,29 +146,31 @@ getFriendList()
             <h2>新的朋友</h2>
           </div>
           <ul>
-            <li>
+            <li v-for="item in requestList" :key="item.id">
               <div class="img">
-                <img src="@/assets/images/logo.png" alt="" />
+                <img :src="item.users.avatar" alt="" />
               </div>
               <div class="cnt">
-                <div class="name">这可是公司</div>
-                <p class="desc">我是某某某</p>
+                <div class="name">{{ item.users.name }}</div>
+                <p class="desc">{{ item.information }}</p>
               </div>
               <div class="tool">
-                <div class="agree">接受</div>
-                <div class="cancel">拒绝</div>
-              </div>
-            </li>
-            <li>
-              <div class="img">
-                <img src="@/assets/images/logo.png" alt="" />
-              </div>
-              <div class="cnt">
-                <div class="name">这可是公司</div>
-                <p class="desc">我是某某某</p>
-              </div>
-              <div class="tool">
-                <p>已添加</p>
+                <div
+                  class="agree"
+                  v-if="item.status === 0"
+                  @click="friendRequestClick(item.id, 1)"
+                >
+                  接受
+                </div>
+                <div
+                  class="cancel"
+                  v-if="item.status === 0"
+                  @click="friendRequestClick(item.id, 2)"
+                >
+                  拒绝
+                </div>
+                <p v-if="item.status === 1">已添加</p>
+                <p v-if="item.status === 2">已拒绝</p>
               </div>
             </li>
           </ul>
@@ -438,6 +439,7 @@ getFriendList()
                 background-color: #78d888;
                 color: #fff;
                 border-radius: 3px;
+                cursor: pointer;
               }
               .cancel {
                 background-color: #d3874a;

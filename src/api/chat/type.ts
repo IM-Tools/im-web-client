@@ -12,3 +12,30 @@ export interface sendChatData {
   data?: string,
   message: string,
 }
+
+export interface chatItemType{
+  created_at: string
+  data: string
+  form_id: number
+  id: number
+  is_read: number
+  msg: string
+  msg_type: number
+  status: number
+  to_id: number
+  Users: {
+    avatar: string
+    email: string
+    id: number
+    name: string
+  }
+}
+export interface chatRecordType<T>{
+  list: T[],
+  mate: {
+    page: number,
+    pageSize: number,
+    total: number
+  },
+  id?: number
+}

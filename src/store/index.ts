@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { sessionList } from '@/api/session'
 export const mainStore = defineStore('main', {
   state: () => {
     return {
@@ -20,10 +19,6 @@ export const mainStore = defineStore('main', {
       userInfo: localStorage.getItem('userInfo')
         ? JSON.parse(localStorage.getItem('userInfo') as string)
         : {},
-      sessionInfo: localStorage.getItem('sessionInfo')
-        ? JSON.parse(localStorage.getItem('sessionInfo') as string)
-        : {},
-      sessionList: [],
     }
   },
   actions: {
@@ -39,21 +34,11 @@ export const mainStore = defineStore('main', {
       localStorage.setItem('userInfo', JSON.stringify(data))
       this.userInfo = data
     },
-    setSessionInfo(data: Object) {
-      localStorage.setItem('sessionInfo', JSON.stringify(data))
-      this.sessionInfo = data
-    },
-    async getSessionInfo() {
-      const res = await sessionList()
-      this.sessionList = res as any
-    },
     logOut(){
       this.token = ''
       this.userInfo = {}
-      this.sessionInfo = {}
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
-      localStorage.removeItem('sessionInfo')
     }
   },
 })

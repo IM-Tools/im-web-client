@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref,reactive } from "vue";
+import { ref } from "vue";
+import { sessionStore } from "@/store/session";
 import { mainStore } from "@/store";
 // icon图标
 import { Search, Plus, Picture } from "@element-plus/icons-vue";
 import { computed } from "@vue/reactivity";
-import { chatMessage,sendChatMessage } from '@/api/chat'
-const store = mainStore();
+import { sendChatMessage } from '@/api/chat'
+import type { userType, sessionType } from '@/api/session/type'
+const store = sessionStore();
+const baseStore = mainStore()
 // 搜索内容
 const searchCnt = ref<string>();
 // 阻止input默认行为
@@ -13,53 +16,21 @@ const handleKeyDown = (e: any) => {
   e.preventDefault();
   sendMsg()
 };
+// 用户信息
+const userInfo = baseStore.userInfo
 // 获得会话列表
-store.getSessionInfo()
-const sessionList = computed( (): any => store.sessionList)
-
-interface sessionData {
-  id: number,
-  name: string,
-  note: string,
-  created_at: string,
-  avatar: string,
-  top_time: string,
-  status: number, 
-  to_id: number, 
-  top_status: number, 
-  Users: Object, 
-  value?: any
-}
-// 获得聊天信息
-const getChatMsg = (session: sessionData) => {
-  chatMessage({
-    page: 1,
-    pageSize: 20,
-    to_id: session.to_id
-  }).then( res => {
-    console.log('私聊记录',res);
-  })
-}
+store.setSessionList()
+const sessionList = computed( () => store.sessionList)
 // 选中的会话
+const selectSession = computed( () => store.selectSession)
+// 获得聊天信息
+const chattingRecords = computed( () => store.chattingRecords)
 
-let sessionMsg = ref<sessionData>({
-  id: -1,
-  name: '',
-  note: '',
-  created_at: '',
-  avatar: '',
-  top_time: '',
-  status: 0, 
-  to_id: -1, 
-  top_status: 0, 
-  Users: Object, 
-})
-console.log('会话列表',sessionList.value);
 // 会话点击事件
-const sessionClick = (session: sessionData) => {
+const sessionClick = (session: sessionType<userType>) => {
   console.log('会话点击事件',session);
-  sessionMsg.value = session
-  getChatMsg(session)
+  store.setSelectSession(session)
+  store.setChattingRecords(session)
 }
 // 发送聊天内容
 const sendContent = ref<string>()
@@ -68,15 +39,33 @@ const sendMsg = () => {
   if(!sendContent.value){
     return
   }
+  const time = new Date()
   sendChatMessage({
-    msg_client_id: 123456,
+    msg_client_id: time.getTime(),
     msg_type: 1,
-    to_id: sessionMsg.value.to_id,
+    to_id: selectSession.value?.to_id,
     channel_type: 1,
     message: sendContent.value
   }).then( res => {
-    console.log(res);
-    
+    const chatMsg = {
+      Users: {
+        avatar: selectSession.value.Users.avatar,
+        email: selectSession.value.Users.email,
+        id: selectSession.value.Users.id,
+        name: selectSession.value.Users.name,
+      },
+      created_at: res.send_time,
+      data: res.data,
+      form_id: res.form_id,
+      id: time.getTime() + 1,
+      is_read: 0,
+      msg: res.message,
+      msg_type: res.msg_type,
+      to_id: res.to_id,
+      status: 1
+    }
+    store.changeChattingRecords(chatMsg)
+    sendContent.value = ''
   })
 }
 </script>
@@ -102,7 +91,7 @@ const sendMsg = () => {
           v-for="item in sessionList"
           :key="item.id"
           @click="sessionClick(item)"
-          :class="{select: item.id === sessionMsg.id,sessionTop: item.top_status == 1}"
+          :class="{select: item.id === selectSession?.id,sessionTop: item.top_status == 1}"
         >
           <div class="img">
             <img :src="item.avatar" alt="" />
@@ -120,85 +109,26 @@ const sendMsg = () => {
     </div>
     <div class="session-cnt">
       <div class="chat-top"></div>
-      <ul>
-        <li>
+      <ul v-if="chattingRecords.list && chattingRecords.list.length > 0">
+        <li v-for=" item in chattingRecords.list" :key="item.id" :class="{own: item.form_id === userInfo.id}">
           <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
+            <img :src="item.Users.avatar" alt="" v-if="item.form_id !== userInfo.id" />
+            <img :src="userInfo.avatar" alt="" v-else />
           </div>
           <div class="chat-msg">
-            <div class="chat-name">张三</div>
-            <div class="chat-cnt">
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
+            <div class="chat-name" v-if="item.form_id !== userInfo.id">{{item.Users.name}}</div>
+            <div class="chat-name" v-else>{{userInfo.name}}</div>
+            <div class="chat-cnt" v-if="item.msg_type === 1">
+              {{item.msg}}
+            </div>
+            <div class="chat-img" v-if="item.msg_type === 2">
+              <img :src="item.msg" alt="" />
             </div>
           </div>
         </li>
-        <li>
-          <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name">
-              <span>张三</span>
-            </div>
-            <div class="chat-cnt">
-              的可能每个看到你可是个看到过开始了麻烦的可能每
-            </div>
-          </div>
-        </li>
-        <li>
-          <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name">张三</div>
-            <div class="chat-img">
-              <img src="@/assets/images/login.png" alt="" />
-            </div>
-          </div>
-        </li>
-        <li class="own">
-          <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name">张三</div>
-            <div class="chat-cnt">
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-              的可能每个看到你可是个看到过开始了麻烦的可能每个看到你可是个看到过开始了麻烦
-            </div>
-          </div>
-        </li>
-        <li class="own">
-          <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name">张三</div>
-            <div class="chat-cnt">的可能每个看的可能每个看到你可是个看</div>
-          </div>
-        </li>
-        <li class="own">
-          <div class="avatar">
-            <img src="@/assets/images/logo.png" alt="" />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name">张三</div>
-            <div class="chat-img">
-              <img src="@/assets/images/login.png" alt="" />
-            </div>
-          </div>
-        </li>
+      </ul>
+      <ul v-else>
+        <li class="none">暂无聊天</li>
       </ul>
       <div class="send">
         <div class="tool">
@@ -333,6 +263,7 @@ const sendMsg = () => {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            user-select: text;
           }
         }
       }
@@ -397,6 +328,7 @@ const sendMsg = () => {
             border-radius: 5px;
             box-shadow: 0 0 5px #eee;
             display: inline-block;
+            user-select: text;
           }
           .chat-img {
             width: 100%;
@@ -406,6 +338,15 @@ const sendMsg = () => {
             }
           }
         }
+      }
+      .none{
+        width: 100%;
+        color: #999;
+        font-size: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 100px;
       }
       .own {
         flex-direction: row-reverse;
@@ -485,7 +426,6 @@ const sendMsg = () => {
         height: 45px;
         display: flex;
         justify-content: flex-end;
-        align-items: center;
         span {
           display: inline-block;
           height: 30px;
@@ -494,9 +434,9 @@ const sendMsg = () => {
           font-size: 14px;
           border-radius: 3px;
           box-sizing: border-box;
-          background-color: #d1daf3;
+          background-color: #eaeefa;
           margin-right: 30px;
-          color: #0139d3;
+          color: #333;
           cursor: pointer;
         }
       }
