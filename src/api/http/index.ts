@@ -16,7 +16,7 @@ class Request {
         const token = localStorage.getItem("token") as string;
         config.headers!.Authorization = 'Bearer '+ token;
         let { data = {}, method } = config
-        if(method === 'post'){
+        if(method === 'post' || method === 'put'){
           const formData = new FormData()
           Object.keys(data).forEach((item) => {
             formData.append(item,data[item])
@@ -68,8 +68,6 @@ class Request {
     url: string,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    console.log(333);
-    
     return this.instance.get(url, config);
   }
 
@@ -86,6 +84,7 @@ class Request {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
+    console.log(555);
     return this.instance.put(url, data, config);
   }
 
