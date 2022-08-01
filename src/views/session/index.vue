@@ -1,42 +1,42 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { sessionStore } from "@/store/session";
-import { mainStore } from "@/store";
+import { onUpdated, ref } from 'vue'
+import { sessionStore } from '@/store/session'
+import { mainStore } from '@/store'
 // icon图标
-import { Search, Plus, Picture } from "@element-plus/icons-vue";
-import { computed } from "@vue/reactivity";
+import { Search, Plus, Picture } from '@element-plus/icons-vue'
+import { computed } from '@vue/reactivity'
 import { sendChatMessage } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
-const store = sessionStore();
+const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
-const searchCnt = ref<string>();
+const searchCnt = ref<string>()
 // 阻止input默认行为
 const handleKeyDown = (e: any) => {
-  e.preventDefault();
+  e.preventDefault()
   sendMsg()
-};
+}
 // 用户信息
 const userInfo = baseStore.userInfo
 // 获得会话列表
 store.setSessionList()
-const sessionList = computed( () => store.sessionList)
+const sessionList = computed(() => store.sessionList)
 // 选中的会话
-const selectSession = computed( () => store.selectSession)
+const selectSession = computed(() => store.selectSession)
 // 获得聊天信息
-const chattingRecords = computed( () => store.chattingRecords)
+const chattingRecords = computed(() => store.chattingRecords)
 
 // 会话点击事件
 const sessionClick = (session: sessionType<userType>) => {
-  console.log('会话点击事件',session);
+  console.log('会话点击事件', session)
   store.setSelectSession(session)
   store.setChattingRecords(session)
 }
 // 发送聊天内容
 const sendContent = ref<string>()
 const sendMsg = () => {
-  console.log(sendContent.value);
-  if(!sendContent.value){
+  console.log(sendContent.value)
+  if (!sendContent.value) {
     return
   }
   const time = new Date()
@@ -45,8 +45,8 @@ const sendMsg = () => {
     msg_type: 1,
     to_id: selectSession.value?.to_id,
     channel_type: 1,
-    message: sendContent.value
-  }).then( res => {
+    message: sendContent.value,
+  }).then((res) => {
     const chatMsg = {
       Users: {
         avatar: selectSession.value.Users.avatar,
@@ -62,12 +62,26 @@ const sendMsg = () => {
       msg: res.message,
       msg_type: res.msg_type,
       to_id: res.to_id,
-      status: 1
+      status: 1,
     }
     store.changeChattingRecords(chatMsg)
     sendContent.value = ''
   })
 }
+
+// 修改滚动距离
+const chatWarp = ref<any>(null)
+const chatContent = ref<any>(null)
+function onScrollMsg() {
+  const height = chatContent.value && chatContent.value.clientHeight
+  if (!chatWarp.value) {
+    return
+  }
+  chatWarp.value.scrollTop = height
+}
+onUpdated( () => {
+  onScrollMsg()
+})
 </script>
 
 <template>
@@ -91,11 +105,14 @@ const sendMsg = () => {
           v-for="item in sessionList"
           :key="item.id"
           @click="sessionClick(item)"
-          :class="{select: item.id === selectSession?.id,sessionTop: item.top_status == 1}"
+          :class="{
+            select: item.id === selectSession?.id,
+            sessionTop: item.top_status == 1,
+          }"
         >
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <span :class="{online: item.top_status == 1}"></span>
+            <span :class="{ online: item.top_status == 1 }"></span>
           </div>
           <div class="user">
             <div class="name">
@@ -105,31 +122,46 @@ const sendMsg = () => {
             <div class="message">你吗喊你回家吃饭了你吗喊你回家吃饭了</div>
           </div>
         </li>
-    </ul>
+      </ul>
     </div>
     <div class="session-cnt">
       <div class="chat-top"></div>
-      <ul v-if="chattingRecords.list && chattingRecords.list.length > 0">
-        <li v-for=" item in chattingRecords.list" :key="item.id" :class="{own: item.form_id === userInfo.id}">
-          <div class="avatar">
-            <img :src="item.Users.avatar" alt="" v-if="item.form_id !== userInfo.id" />
-            <img :src="userInfo.avatar" alt="" v-else />
-          </div>
-          <div class="chat-msg">
-            <div class="chat-name" v-if="item.form_id !== userInfo.id">{{item.Users.name}}</div>
-            <div class="chat-name" v-else>{{userInfo.name}}</div>
-            <div class="chat-cnt" v-if="item.msg_type === 1">
-              {{item.msg}}
+      <div class="chat-msg-warp" ref="chatWarp">
+        <ul
+          v-show="chattingRecords.list && chattingRecords.list.length > 0"
+          ref="chatContent"
+        >
+          <li
+            v-for="item in chattingRecords.list"
+            :key="item.id"
+            :class="{ own: item.form_id === userInfo.id }"
+          >
+            <div class="avatar">
+              <img
+                :src="item.Users.avatar"
+                alt=""
+                v-if="item.form_id !== userInfo.id"
+              />
+              <img :src="userInfo.avatar" alt="" v-else />
             </div>
-            <div class="chat-img" v-if="item.msg_type === 2">
-              <img :src="item.msg" alt="" />
+            <div class="chat-msg">
+              <div class="chat-name" v-if="item.form_id !== userInfo.id">
+                {{ item.Users.name }}
+              </div>
+              <div class="chat-name" v-else>{{ userInfo.name }}</div>
+              <div class="chat-cnt" v-if="item.msg_type === 1">
+                {{ item.msg }}
+              </div>
+              <div class="chat-img" v-if="item.msg_type === 2">
+                <img :src="item.msg" alt="" />
+              </div>
             </div>
-          </div>
-        </li>
-      </ul>
-      <ul v-else>
-        <li class="none">暂无聊天</li>
-      </ul>
+          </li>
+        </ul>
+        <ul v-show="!chattingRecords.list || chattingRecords.list.length <= 0">
+          <li class="none">暂无聊天</li>
+        </ul>
+      </div>
       <div class="send">
         <div class="tool">
           <ul>
@@ -145,7 +177,11 @@ const sendMsg = () => {
           </ul>
         </div>
         <div class="chat-content">
-          <textarea id="textarea" v-model="sendContent" @keydown.enter="handleKeyDown"></textarea>
+          <textarea
+            id="textarea"
+            v-model="sendContent"
+            @keydown.enter="handleKeyDown"
+          ></textarea>
         </div>
         <div class="btn">
           <span @click="sendMsg">发送</span>
@@ -213,7 +249,6 @@ const sendMsg = () => {
             width: 100%;
             height: 100%;
             position: absolute;
-          
           }
           .online {
             width: 10px;
@@ -227,7 +262,7 @@ const sendMsg = () => {
             right: 0px;
             background-color: #3bd821 !important;
           }
-           .offline {
+          .offline {
             width: 10px;
             height: 10px;
             display: block;
@@ -267,13 +302,12 @@ const sendMsg = () => {
           }
         }
       }
-      .sessionTop{
+      .sessionTop {
         background-color: #eeeeee !important;
       }
       .select {
         background-color: #cfcfcf !important;
       }
-      
     }
   }
   .session-cnt {
@@ -287,7 +321,7 @@ const sendMsg = () => {
       border-bottom: 1px solid #e8eaec;
       box-sizing: border-box;
     }
-    & > ul {
+    & > .chat-msg-warp {
       width: 100%;
       height: calc(100% - 220px);
       padding: 20px 10px;
@@ -339,7 +373,7 @@ const sendMsg = () => {
           }
         }
       }
-      .none{
+      .none {
         width: 100%;
         color: #999;
         font-size: 12px;

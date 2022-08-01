@@ -23,6 +23,7 @@ export interface sessionType<T> {
   top_time: string,
   status: number, 
   to_id: number, 
+  form_id: number, 
   top_status: number, 
   Users: T, 
   value?: any
