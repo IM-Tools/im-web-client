@@ -38,4 +38,5 @@ export interface chatRecordType<T>{
     total: number
   },
   id?: number
+  from_id?: number
 }

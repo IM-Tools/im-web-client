@@ -5,9 +5,9 @@ import { Search, Plus } from '@element-plus/icons-vue'
 import {
   friendRecordList,
   friendList,
-  recordFriend,
   friendRecord,
 } from '@/api/friend'
+import { createSession } from '@/api/session'
 import type {
   requestListType,
   userType,
@@ -56,6 +56,17 @@ const friendRequestClick = (id: number, num: number) => {
     console.log(res)
     getFriendList()
     addFriendClick()
+  })
+}
+
+// 创建会话
+const cleartSession = () => {
+  console.log('创建会话');
+  createSession({
+    id: userMessage.value?.Users.id ||-1,
+    type: 1
+  }).then( res => {
+    console.log(res);
   })
 }
 </script>
@@ -134,11 +145,11 @@ const friendRequestClick = (id: number, num: number) => {
             </div>
           </div>
           <ul>
-            <li>备注: 123456</li>
-            <li>来源: 123456</li>
+            <li><span>昵称:</span> {{userMessage?.note || '暂无'}}</li>
+            <li><span>最后登录时间:</span> {{userMessage?.Users.last_login_time}}</li>
           </ul>
           <div class="send">
-            <el-button type="primary">发消息</el-button>
+            <el-button type="primary" @click="cleartSession">发消息</el-button>
           </div>
         </div>
         <div class="friend-request-list" v-else>
@@ -363,6 +374,13 @@ const friendRequestClick = (id: number, num: number) => {
           border-top: 1px solid #eee;
           border-bottom: 1px solid #eee;
           margin-top: 15px;
+          li{
+            width: 100%;
+            span{
+              display: inline-block;
+              width: 100px;
+            }
+          }
         }
         .send {
           width: 100%;

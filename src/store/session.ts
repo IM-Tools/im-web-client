@@ -89,17 +89,19 @@ export const sessionStore = defineStore('sessionStore', {
         to_id: session.to_id,
       })
       const chatRecord = {
-        list: message.list,
-        mate: message.mate,
-        id: session.id
+        list: message.list || [],
+        mate: message.mate|| {},
+        id: session.to_id,
+        from_id: session.form_id
       }
       this.chattingRecords = chatRecord
-      console.log('获得聊天信息',chatRecord);
       sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
     },
     changeChattingRecords(message: chatItemType){
-      this.chattingRecords.list.push(message)
-      sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
+      if(message.form_id === this.chattingRecords.id || message.form_id === this.chattingRecords.from_id){
+        this.chattingRecords.list.push(message)
+        sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
+      }
     }
   },
 })
