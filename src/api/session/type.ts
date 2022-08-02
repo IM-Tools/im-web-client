@@ -26,5 +26,9 @@ export interface sessionType<T> {
   form_id: number, 
   top_status: number, 
   Users: T, 
-  value?: any
+  value?: any,
+  last_message: {
+    content: string,
+    time: string
+  }
 }

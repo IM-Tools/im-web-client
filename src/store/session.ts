@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { sessionList } from '@/api/session'
 import { chatMessage } from '@/api/chat'
+import { timestampChange } from '@/utils'
 import type { userType, sessionType } from '@/api/session/type'
 import type { chatRecordType,chatItemType } from '@/api/chat/type'
 export const sessionStore = defineStore('sessionStore', {
@@ -39,7 +40,15 @@ export const sessionStore = defineStore('sessionStore', {
       }
       const res = await sessionList()
       sessionStorage.setItem('sessionList', JSON.stringify(res))
-      this.sessionList = res
+      this.sessionList = res.map( item => {
+        const time = new Date()
+        const option = {
+          content: '开始聊天',
+          time: timestampChange(time, 'HH:mm:ss')
+        }
+        item.last_message = option
+        return item
+      })
       if (this.selectSession.id) {
         return
       } else {
@@ -68,6 +77,20 @@ export const sessionStore = defineStore('sessionStore', {
         })
         if (idx >= 0) {
           this.sessionList.splice(idx, 1)
+          sessionStorage.setItem(
+            'sessionList',
+            JSON.stringify(this.sessionList)
+          )
+        }
+      }
+      if(type === 'send'){
+        
+        const idx: number = this.sessionList.findIndex((item) => {
+          return item.id === session.id
+        })
+        console.log('send',this.sessionList[idx]);
+        if (idx >= 0) {
+          this.sessionList[idx].last_message = session.last_message
           sessionStorage.setItem(
             'sessionList',
             JSON.stringify(this.sessionList)

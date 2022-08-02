@@ -9,7 +9,7 @@ export function checkEmail(str: String): Boolean {
   }
 }
 // 获取年月日时分秒 周 时间
-export function timestampChange(timestamp: any, format?: string) {
+export function timestampChange(timestamp: any, format?: string): string {
   let dateStr = format || 'yyyy-MM-dd HH:mm:ss'
   // 获取完整年份(4位)
   const year = timestamp.getFullYear()
