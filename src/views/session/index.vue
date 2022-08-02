@@ -7,6 +7,7 @@ import { Search, Plus, Picture } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
+import { timestampChange } from '@/utils'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -47,6 +48,7 @@ const sendMsg = () => {
     channel_type: 1,
     message: sendContent.value,
   }).then((res) => {
+    // 聊天记录
     const chatMsg = {
       Users: {
         avatar: selectSession.value.Users.avatar,
@@ -65,6 +67,14 @@ const sendMsg = () => {
       status: 1,
     }
     store.changeChattingRecords(chatMsg)
+    // 会话列表记录
+    const sessionMsg = Object.assign(selectSession.value, {
+      last_message: {
+        content: res.message,
+        time: timestampChange(time, 'HH:mm:ss'),
+      },
+    })
+    store.changeSessionList(sessionMsg, 'send')
     sendContent.value = ''
   })
 }
@@ -79,7 +89,7 @@ function onScrollMsg() {
   }
   chatWarp.value.scrollTop = height
 }
-onUpdated( () => {
+onUpdated(() => {
   onScrollMsg()
 })
 </script>
@@ -117,9 +127,13 @@ onUpdated( () => {
           <div class="user">
             <div class="name">
               {{ item.note || item.name }}
-              <div class="time">15:11</div>
+              <div class="time">
+                {{ item.last_message ? item.last_message.time : '' }}
+              </div>
             </div>
-            <div class="message">你吗喊你回家吃饭了你吗喊你回家吃饭了</div>
+            <div class="message">
+              {{ item.last_message ? item.last_message.content : '开始聊天' }}
+            </div>
           </div>
         </li>
       </ul>
