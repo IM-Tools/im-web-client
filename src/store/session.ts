@@ -31,11 +31,10 @@ export const sessionStore = defineStore('sessionStore', {
   actions: {
     async setSessionList() {
       if (this.sessionList[0]) {
-        if (this.selectSession.id) {
-          return
-        } else {
+        if (!this.selectSession.id) {
           this.selectSession = this.sessionList[0]
         }
+        this.setChattingRecords(this.selectSession)
         return
       }
       const res = await sessionList()
@@ -44,16 +43,15 @@ export const sessionStore = defineStore('sessionStore', {
         const time = new Date()
         const option = {
           content: '开始聊天',
-          time: timestampChange(time, 'HH:mm:ss')
+          time: timestampChange(time, 'HH:mm')
         }
         item.last_message = option
         return item
       })
-      if (this.selectSession.id) {
-        return
-      } else {
+      if (!this.selectSession.id) {
         this.selectSession = this.sessionList[0]
       }
+      this.setChattingRecords(this.selectSession)
     },
     changeSessionList(session: sessionType<userType>, type: string) {
       if (type === 'add') {
@@ -84,7 +82,6 @@ export const sessionStore = defineStore('sessionStore', {
         }
       }
       if(type === 'send'){
-        
         const idx: number = this.sessionList.findIndex((item) => {
           return item.id === session.id
         })
@@ -111,9 +108,11 @@ export const sessionStore = defineStore('sessionStore', {
         pageSize: 20,
         to_id: session.to_id,
       })
+      console.log(message);
+      const isArray = message.list instanceof Array
       const chatRecord = {
-        list: message.list || [],
-        mate: message.mate|| {},
+        list: isArray ? message.list.reverse() : [],
+        mate: message.mate || {},
         id: session.to_id,
         from_id: session.form_id
       }

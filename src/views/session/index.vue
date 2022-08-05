@@ -71,7 +71,7 @@ const sendMsg = () => {
     const sessionMsg = Object.assign(selectSession.value, {
       last_message: {
         content: res.message,
-        time: timestampChange(time, 'HH:mm:ss'),
+        time: timestampChange(time, 'HH:mm'),
       },
     })
     store.changeSessionList(sessionMsg, 'send')
@@ -92,6 +92,9 @@ function onScrollMsg() {
 onUpdated(() => {
   onScrollMsg()
 })
+const defaultTime = ref<string>('')
+const time = new Date()
+defaultTime.value = timestampChange(time, 'mm:ss')
 </script>
 
 <template>
@@ -128,7 +131,7 @@ onUpdated(() => {
             <div class="name">
               {{ item.note || item.name }}
               <div class="time">
-                {{ item.last_message ? item.last_message.time : '' }}
+                {{ item.last_message ? item.last_message.time : defaultTime }}
               </div>
             </div>
             <div class="message">
