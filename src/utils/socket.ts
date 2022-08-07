@@ -1,5 +1,6 @@
 import { useWebSocket } from '@vueuse/core'
 import { sessionStore } from '@/store/session'
+import { computed } from '@vue/reactivity'
 import { timestampChange } from '@/utils'
 import { getFriendDetails } from '@/api/friend'
 interface socketOptions {
@@ -35,6 +36,8 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         openBack && openBack()
       },
       async onMessage(ws, event) {
+        // 选中的会话
+        const selectSession = computed(() => store.selectSession)
         // console.log('event', event)
         const message = JSON.parse(event.data)
         switch (message.msg_code) {
@@ -63,6 +66,15 @@ function initWebsocket(openBack: Function, closeBack: Function) {
               status: 1,
             }
             store.changeChattingRecords(chatMsg)
+            // 会话列表记录
+            console.log('会话列表记录',selectSession.value);
+            const sessionMsg = Object.assign(selectSession.value, {
+              last_message: {
+                content: message.message,
+                time: timestampChange(time, 'HH:mm'),
+              },
+            })
+            store.changeSessionList(sessionMsg, 'send')
             break
           case 1000:
             console.log('添加好友请求', message)
