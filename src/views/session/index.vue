@@ -105,7 +105,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           <el-input
             v-model="searchCnt"
             class="w-50 m-2"
-            placeholder="Type something"
+            placeholder="搜索"
             :prefix-icon="Search"
           />
         </div>
@@ -234,7 +234,11 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #dad8d8;
+        background-color: #e6e6e6;
+        cursor: pointer;
+        &:hover{
+          background-color: #dad8d8;
+        }
       }
     }
     ul {

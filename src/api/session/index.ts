@@ -6,6 +6,6 @@ export function sessionList(params?: Object) {
 }
 //创建会话
 export function createSession(data: sessionData) {
-  return request.post('/sessions', data)
+  return request.post<sessionType<userType>>('/sessions', data)
 }
 
