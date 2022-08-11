@@ -8,11 +8,19 @@ import {
   friendRecord,
 } from '@/api/friend'
 import { createSession } from '@/api/session'
+import { sessionStore } from '@/store/session'
 import type {
   requestListType,
   userType,
   friendType,
 } from '@/api/friend/type'
+import AddFriend from '@/components/AddFriend.vue'
+// 是否添加好友
+const isAddFriend = ref(false)
+const addBtnClick = () => {
+  isAddFriend.value = true
+}
+const store = sessionStore()
 // 搜索内容
 const searchCnt = ref<string>()
 const selectName = ref<string>('addFriend')
@@ -67,6 +75,7 @@ const cleartSession = () => {
     type: 1
   }).then( res => {
     console.log(res);
+    store.changeSessionList(res, 'add')
   })
 }
 </script>
@@ -83,7 +92,7 @@ const cleartSession = () => {
             :prefix-icon="Search"
           />
         </div>
-        <div class="add">
+        <div class="add" @click="addBtnClick">
           <el-icon><Plus /></el-icon>
         </div>
       </div>
@@ -189,6 +198,10 @@ const cleartSession = () => {
       </div>
     </div>
   </div>
+  <div class="add-friend-box" v-if="isAddFriend">
+    <AddFriend></AddFriend>
+  </div>
+  <div class="mask" v-if="isAddFriend"></div>
 </template>
 
 <style scoped lang="less">
@@ -472,5 +485,25 @@ const cleartSession = () => {
       }
     }
   }
+}
+.add-friend-box{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+.mask{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  background-color: rgba(0,0,0,.5);
 }
 </style>
