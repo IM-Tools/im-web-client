@@ -230,7 +230,11 @@ const cleartSession = () => {
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #dad8d8;
+        background-color: #e6e6e6;
+        cursor: pointer;
+        &:hover{
+          background-color: #dad8d8;
+        }
       }
     }
     .list {
