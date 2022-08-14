@@ -104,7 +104,7 @@ export const sessionStore = defineStore('sessionStore', {
     },
     async setChattingRecords(session: sessionType<userType>) {
       const message = await chatMessage({
-        page: 1,
+        page: "",
         pageSize: 20,
         to_id: session.to_id,
       })

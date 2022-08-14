@@ -130,7 +130,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           expire_time: res.expire_time
         }
         store.setUserInfo(info)
-        store.getSessionInfo()
+        // store.getSessionInfo({})
         router.push({
           path: '/'
         })
@@ -186,8 +186,8 @@ const themeClick = (theme: string) => {
 
 <template>
   <div class="login">
-    <div class="container" :class="{ reverse: isReverse }">
-      <div class="left">
+    <div class="container" >
+      <div class="left" v-if="!isReverse">
         <div class="logo">
           <img src="@/assets/images/logo.png" alt="" />
         </div>
@@ -232,7 +232,7 @@ const themeClick = (theme: string) => {
           </div>
         </div>
       </div>
-      <div class="right">
+      <div class="right" v-else>
         <div class="title">
           <div class="img">
             <img src="@/assets/images/logo.png" alt="" />
