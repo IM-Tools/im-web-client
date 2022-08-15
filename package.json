@@ -13,6 +13,7 @@
     "element-plus": "^2.2.9",
     "less": "^4.1.3",
     "less-loader": "^11.0.0",
+    "livekit-client": "^1.2.10",
     "normalize.css": "^8.0.1",
     "pinia": "^2.0.14",
     "vue": "^3.2.25",
