@@ -1,5 +1,5 @@
 import request from '../request'
-import type { recordFriend, requestListType, userType, friendRecordType, friendType} from './type'
+import type { recordFriend, requestListType, userType, friendRecordType, friendType,noFriendType} from './type'
 // 获取好友列表
 export function friendList(params?: Object) {
   return request.get('/friends', { params })
@@ -21,6 +21,6 @@ export function friendRecord(data: friendRecordType) {
   return request.put<friendType<userType>[]>('/friends/record', data)
 }
 // 查询非好友列表
-export function getUserList(params?: string){
-  return request.get('/friends/userQuery', { params })
+export function getUserList(params?: { email: string}){
+  return request.get<noFriendType[]>('/friends/userQuery', { params })
 }

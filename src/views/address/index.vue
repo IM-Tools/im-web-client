@@ -20,6 +20,10 @@ const isAddFriend = ref(false)
 const addBtnClick = () => {
   isAddFriend.value = true
 }
+// 关闭添加好友
+const closeAddFriend = () => {
+  isAddFriend.value = false
+}
 const store = sessionStore()
 // 搜索内容
 const searchCnt = ref<string>()
@@ -199,7 +203,7 @@ const cleartSession = () => {
     </div>
   </div>
   <div class="add-friend-box" v-if="isAddFriend">
-    <AddFriend></AddFriend>
+    <AddFriend @closeAddFriend="closeAddFriend"></AddFriend>
   </div>
   <div class="mask" v-if="isAddFriend"></div>
 </template>

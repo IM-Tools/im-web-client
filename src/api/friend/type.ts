@@ -43,3 +43,13 @@ export interface friendType<T> {
   update_at: string
   Users: T
 }
+
+export interface noFriendType{
+  avatar: string,
+  bio: string,
+  email: string,
+  id: number,
+  name: string,
+  sex: number,
+  status: number
+}

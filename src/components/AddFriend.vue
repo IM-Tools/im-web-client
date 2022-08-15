@@ -1,25 +1,63 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, defineEmits } from 'vue'
 import { Close } from '@element-plus/icons-vue'
-import { getUserList } from '@/api/friend'
+import { getUserList, recordFriend } from '@/api/friend'
+import type { noFriendType } from '@/api/friend/type'
+import { ElMessage, ElMessageBox } from 'element-plus'
 const friendMsg = ref('')
 // 获取非好友列表
-const otherUserList = []
+const otherUserList = ref<noFriendType[]>([])
 const getOtherUserList = () => {
-  getUserList().then( res => {
-    console.log(res);
+  getUserList({
+    email: friendMsg.value
+  }).then((res) => {
+    console.log(res)
+    otherUserList.value = res
   })
 }
 onMounted(() => {
   getOtherUserList()
 })
+// 查询用户
+const searchClick = () => {
+  getUserList()
+}
+// 关闭添加好友窗口
+const emit = defineEmits(['closeAddFriend'])
+const closeAddFriend = () => {
+  console.log(222)
+  emit('closeAddFriend')
+}
+// 添加好友
+const addFriendClick = (user: noFriendType) => {
+  ElMessageBox.prompt('请求描述', '添加好友', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+  })
+    .then(({ value }) => {
+      console.log(value)
+      recordFriend({
+        to_id: user.id,
+        information: value ? value : '添加好友',
+      }).then((res) => {
+        console.log(res)
+        ElMessage({
+          type: 'success',
+          message: '发送好友请求成功',
+        })
+      })
+    })
+    .catch(() => {})
+}
 </script>
 
 <template>
   <div class="add-friend">
     <div class="head-title">
       <h3>添加好友</h3>
-      <span><el-icon><Close /></el-icon></span>
+      <span @click="closeAddFriend"
+        ><el-icon><Close /></el-icon
+      ></span>
     </div>
     <div class="top">
       <div class="search-warp">
@@ -27,7 +65,7 @@ onMounted(() => {
           <el-input v-model="friendMsg" placeholder="请输入用户邮箱" />
         </div>
         <div class="btn">
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="searchClick">查询</el-button>
         </div>
       </div>
     </div>
@@ -35,52 +73,14 @@ onMounted(() => {
       <p>好友推荐</p>
       <div class="friend-list">
         <ul>
-          <li>
-            <div class="img"></div>
-            <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456</div>
-              <div class="add">+好友</div>
+          <li v-for="item in otherUserList" :key="item.id">
+            <div class="img">
+              <img :src="item.avatar" alt="" />
             </div>
-          </li>
-          <li>
-            <div class="img"></div>
             <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456</div>
-              <div class="add">+好友</div>
-            </div>
-          </li>
-          <li>
-            <div class="img"></div>
-            <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456</div>
-              <div class="add">+好友</div>
-            </div>
-          </li>
-          <li>
-            <div class="img"></div>
-            <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456</div>
-              <div class="add">+好友</div>
-            </div>
-          </li>
-          <li>
-            <div class="img"></div>
-            <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456123456123456123456123456</div>
-              <div class="add">+好友</div>
-            </div>
-          </li>
-          <li>
-            <div class="img"></div>
-            <div class="right">
-              <div class="title">九千期许</div>
-              <div class="msg">123456</div>
-              <div class="add">+好友</div>
+              <div class="title">{{ item.name }}</div>
+              <div class="msg">性别：{{ ['未知', '男', '女'][item.sex] }}</div>
+              <div class="add" @click="addFriendClick(item)">+好友</div>
             </div>
           </li>
         </ul>
@@ -96,7 +96,7 @@ onMounted(() => {
   border-radius: 3px;
   overflow: hidden;
   background-color: #fff;
-  .head-title{
+  .head-title {
     width: 100%;
     height: 50px;
     text-align: center;
@@ -104,7 +104,7 @@ onMounted(() => {
     background-color: #4f6fc7;
     color: #fff;
     position: relative;
-    span{
+    span {
       position: absolute;
       display: flex;
       align-items: center;
@@ -113,7 +113,7 @@ onMounted(() => {
       right: 10px;
       font-size: 26px;
       cursor: pointer;
-      &:hover{
+      &:hover {
         color: #ec6363;
       }
     }
@@ -126,65 +126,70 @@ onMounted(() => {
     .search-warp {
       display: flex;
       width: 100%;
-      .search{
+      .search {
         width: 490px;
         margin-right: 20px;
       }
     }
   }
-  .list{
+  .list {
     margin-top: 10px;
     width: 100%;
     box-sizing: border-box;
     padding: 0 20px;
-    p{
+    p {
       width: 100%;
       font-size: 16px;
       color: #666;
     }
-    .friend-list{
+    .friend-list {
       width: 100%;
       height: 430px;
       overflow: hidden;
       overflow-y: auto;
       margin-top: 15px;
-      ul{
+      ul {
         display: flex;
         flex-wrap: wrap;
-        li{
+        li {
           width: 25%;
           margin-bottom: 15px;
           display: flex;
           font-size: 14px;
           overflow: hidden;
-          .img{
+          .img {
             width: 65px;
             height: 65px;
             border-radius: 50%;
             background-color: #ddeafc;
             margin-right: 10px;
+            overflow: hidden;
+            img {
+              width: 100%;
+              height: 100%;
+              border-radius: 50%;
+            }
           }
-          .right{
+          .right {
             margin-top: -3px;
             width: calc(100% - 75px);
             box-sizing: border-box;
             padding-right: 15px;
-            .title{
+            .title {
               color: #333;
               line-height: 24px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: no-warp;
             }
-            .msg{
-              
+            .msg {
               color: #555;
               width: 100%;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: no-warp;
             }
-            .add{
+            .add {
               background-color: #70a8f7;
               padding: 4px 0;
               width: 56px;
