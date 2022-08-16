@@ -4,6 +4,7 @@ import { chatMessage } from '@/api/chat'
 import { timestampChange } from '@/utils'
 import type { userType, sessionType } from '@/api/session/type'
 import type { chatRecordType,chatItemType } from '@/api/chat/type'
+import { resolve } from 'path'
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
     const sessionList: sessionType<userType>[] = sessionStorage.getItem(
@@ -111,7 +112,28 @@ export const sessionStore = defineStore('sessionStore', {
       console.log(message);
       const isArray = message.list instanceof Array
       const chatRecord = {
-        list: isArray ? message.list.reverse() : [],
+        list: isArray ? message.list : [],
+        mate: message.mate || {},
+        id: session.to_id,
+        from_id: session.form_id
+      }
+      this.chattingRecords = chatRecord
+      sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
+      // return new Promise((resolve, reject) => {
+      //   resolve(true)
+      // })
+      return true
+    },
+    async moreRecord(session: sessionType<userType>, chatId: number){
+      const message = await chatMessage({
+        page: chatId,
+        pageSize: 20,
+        to_id: session.to_id,
+      })
+      console.log(message);
+      const isArray = message.list instanceof Array
+      const chatRecord = {
+        list: isArray ? message.list.concat(this.chattingRecords.list) : this.chattingRecords.list,
         mate: message.mate || {},
         id: session.to_id,
         from_id: session.form_id

@@ -441,7 +441,8 @@ const themeClick = (theme: string) => {
     transition: all 0.2s;
     height: 100%;
     overflow: hidden;
-    background-color: #fff;
+    background-color: var(--theme-bgColor);
+    border-radius: 10px;
     img {
       width: 100%;
     }
