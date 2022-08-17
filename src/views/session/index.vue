@@ -19,6 +19,7 @@ const handleKeyDown = (e: any) => {
 }
 // 用户信息
 const userInfo = baseStore.userInfo
+const isMore = ref<boolean>(false)
 // 获得会话列表
 store.setSessionList()
 const sessionList = computed(() => store.sessionList)
@@ -29,9 +30,20 @@ const chattingRecords = computed(() => store.chattingRecords)
 
 // 会话点击事件
 const sessionClick = (session: sessionType<userType>) => {
-  console.log('会话点击事件', session)
+  isMore.value = false
+  // 获取点击会话
   store.setSelectSession(session)
-  store.setChattingRecords(session)
+  // 获取聊天记录
+  const result = store.setChattingRecords(session)
+  result.then( res => {
+    onScrollMsg()
+  })
+}
+// 查看更多聊天记录
+const moreRecord = () => {
+  isMore.value = true
+  const id = chattingRecords.value.list[0].id
+  store.moreRecord(selectSession.value, id)
 }
 // 发送聊天内容
 const sendContent = ref<string>()
@@ -79,10 +91,14 @@ const sendMsg = () => {
   })
 }
 
+
 // 修改滚动距离
 const chatWarp = ref<any>(null)
 const chatContent = ref<any>(null)
 function onScrollMsg() {
+  if(isMore.value){
+    return    
+  }
   const height = chatContent.value && chatContent.value.clientHeight
   if (!chatWarp.value) {
     return
@@ -90,7 +106,7 @@ function onScrollMsg() {
   chatWarp.value.scrollTop = height
 }
 onUpdated(() => {
-  onScrollMsg()
+  
 })
 const defaultTime = ref<string>('')
 const time = new Date()
@@ -148,6 +164,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           v-show="chattingRecords.list && chattingRecords.list.length > 0"
           ref="chatContent"
         >
+          <p><span @click="moreRecord">查看更多消息</span></p>
           <li
             v-for="item in chattingRecords.list"
             :key="item.id"
@@ -236,7 +253,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         justify-content: center;
         background-color: #e6e6e6;
         cursor: pointer;
-        &:hover{
+        &:hover {
           background-color: #dad8d8;
         }
       }
@@ -345,9 +362,22 @@ defaultTime.value = timestampChange(time, 'mm:ss')
     & > .chat-msg-warp {
       width: 100%;
       height: calc(100% - 220px);
-      padding: 20px 10px;
+      padding: 0px 10px 20px;
       box-sizing: border-box;
       overflow-y: auto;
+      p {
+        width: 100%;
+        font-size: 12px;
+        text-align: center;
+        line-height: 30px;
+        span {
+          color: #6084e7;
+          cursor: pointer;
+          &:hover{
+            color: #2a57d3;
+          }
+        }
+      }
       li {
         display: flex;
         margin-bottom: 15px;
