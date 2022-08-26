@@ -10,6 +10,9 @@ import { mainStore } from '@/store';
 import { useRouter } from 'vue-router'
 // 接口
 import { login,registerede,sendEmailCode } from '@/api/login'
+// 主题切换
+import useTheme from '@/hooks/useTheme'
+const { themeList, changeThemeColor }  = useTheme()
 const router = useRouter()
 const store = mainStore()
 // 用户账号密码
@@ -176,12 +179,7 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
     }
   })
 }
-// 主题列表
-const themeList = store.themeList
-// 主题点击事件
-const themeClick = (theme: string) => {
-  store.setTheme(theme)
-}
+
 </script>
 
 <template>
@@ -319,7 +317,7 @@ const themeClick = (theme: string) => {
       </div>
       <div class="theme">
         <ul>
-          <li v-for="item in themeList" :key="item.id" @click="themeClick(item.class)">{{item.name}}</li>
+          <li v-for="item in themeList" :key="item.id" @click="changeThemeColor(item.class)">{{item.name}}</li>
         </ul>
       </div>
     </div>
