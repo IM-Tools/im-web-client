@@ -2,19 +2,17 @@
 import { ref } from 'vue'
 // icon图标
 import { Search, Plus } from '@element-plus/icons-vue'
-import {
-  friendRecordList,
-  friendList,
-  friendRecord,
-} from '@/api/friend'
+import { friendRecordList, friendRecord } from '@/api/friend'
 import { createSession } from '@/api/session'
 import { sessionStore } from '@/store/session'
-import type {
-  requestListType,
-  userType,
-  friendType,
-} from '@/api/friend/type'
+import { mainStore, userStore } from '@/store'
+import { computed } from '@vue/reactivity'
+import type { requestListType, userType, friendType } from '@/api/friend/type'
 import AddFriend from '@/components/AddFriend.vue'
+const usersStore = userStore()
+// 获取用户信息
+const baseStore = mainStore()
+const userInfo = baseStore.userInfo
 // 是否添加好友
 const isAddFriend = ref(false)
 const addBtnClick = () => {
@@ -27,36 +25,39 @@ const closeAddFriend = () => {
 const store = sessionStore()
 // 搜索内容
 const searchCnt = ref<string>()
-const selectName = ref<string>('addFriend')
+
 // 用户点击事件
-const userMessage = ref<friendType<userType>>()
 const userClick = (user: friendType<userType>) => {
-  selectName.value = 'userList'
-  userMessage.value = user
-  console.log(user);
+  console.log(user)
+
+  usersStore.setSelectName('userList')
+  usersStore.setSelectUser(user)
+  // userMessage.value = user
+  // console.log(user);
 }
 // 请求列表
 const requestList = ref<requestListType<userType>[]>()
-const addFriendClick = async () => {
-  selectName.value = 'addFriend'
+const newFriendClick = async () => {
+  usersStore.setSelectName('newFriend')
   // 获得好友请求列表
   friendRecordList().then((res) => {
     console.log(res)
-    requestList.value = res
+    requestList.value = res.filter((item) => {
+      return item.form_id !== userInfo.id
+    })
   })
 }
 
+// 获取请求列表
+usersStore.setUserList()
+// 获取选中名
+const selectName = computed(() => usersStore.selectName)
+// 获取选中好友
+const userMessage = computed(() => usersStore.selectUser)
 // 获取好友列表
-const myFriendList = ref<friendType<userType>[]>()
-const getFriendList = () => {
-  friendList().then((res) => {
-    myFriendList.value = res
-    console.log(res)
-  })
-}
-getFriendList()
-if (selectName.value === 'addFriend') {
-  addFriendClick()
+const myFriendList = computed(() => usersStore.userList)
+if (selectName.value === 'newFriend') {
+  newFriendClick()
 }
 
 // 同意/拒绝好友请求
@@ -66,19 +67,21 @@ const friendRequestClick = (id: number, num: number) => {
     status: num,
   }).then((res) => {
     console.log(res)
-    getFriendList()
-    addFriendClick()
+    newFriendClick()
+    if(num === 1){
+      usersStore.changeUserList(res)
+    }
   })
 }
 
 // 创建会话
 const cleartSession = () => {
-  console.log('创建会话');
+  console.log('创建会话')
   createSession({
-    id: userMessage.value?.Users.id ||-1,
-    type: 1
-  }).then( res => {
-    console.log(res);
+    id: userMessage.value?.Users.id || -1,
+    type: 1,
+  }).then((res) => {
+    console.log(res)
     store.changeSessionList(res, 'add')
   })
 }
@@ -92,7 +95,7 @@ const cleartSession = () => {
           <el-input
             v-model="searchCnt"
             class="w-50 m-2"
-            placeholder="Type something"
+            placeholder="搜索"
             :prefix-icon="Search"
           />
         </div>
@@ -101,11 +104,11 @@ const cleartSession = () => {
         </div>
       </div>
       <div class="list">
-        <div class="new-friend" @click="addFriendClick">
+        <div class="new-friend" @click="newFriendClick">
           <p>新的朋友</p>
           <div
             class="add-friend"
-            :class="{ select: selectName === 'addFriend' }"
+            :class="{ select: selectName === 'newFriend' }"
           >
             <div class="icon">
               <svg
@@ -129,15 +132,18 @@ const cleartSession = () => {
         </div>
         <ul>
           <li
-            v-for="item in myFriendList" :key="item.id"
-            :class="{ select: selectName !== 'addFriend' &&  userMessage?.id === item.id}"
+            v-for="item in myFriendList"
+            :key="item.id"
+            :class="{
+              select: selectName !== 'newFriend' && userMessage?.id === item.id,
+            }"
             @click="userClick(item)"
           >
             <div class="img">
               <img :src="item.Users.avatar" alt="" />
             </div>
             <div class="user">
-              <div class="name">{{item.Users.name}}</div>
+              <div class="name">{{ item.Users.name }}</div>
             </div>
           </li>
         </ul>
@@ -146,20 +152,27 @@ const cleartSession = () => {
     <div class="session-cnt">
       <div class="chat-top"></div>
       <div class="user-message">
-        <div class="box" v-if="selectName !== 'addFriend'">
+        <div class="box" v-if="selectName !== 'newFriend'">
           <div class="message">
             <div class="avatar">
               <img :src="userMessage?.Users.avatar" alt="" />
             </div>
             <div class="user-info">
-              <div class="name">{{userMessage?.Users.name}}</div>
-              <div class="account">邮箱：{{userMessage?.Users.email}}</div>
-              <div class="address">性别：{{['未知','男','女'][userMessage?.Users.sex as number]}}</div>
+              <div class="name">{{ userMessage?.Users.name }}</div>
+              <div class="account">邮箱：{{ userMessage?.Users.email }}</div>
+              <div class="address">
+                性别：{{
+                  ['未知', '男', '女'][userMessage?.Users.sex as number]
+                }}
+              </div>
             </div>
           </div>
           <ul>
-            <li><span>昵称:</span> {{userMessage?.note || '暂无'}}</li>
-            <li><span>最后登录时间:</span> {{userMessage?.Users.last_login_time}}</li>
+            <li><span>昵称:</span> {{ userMessage?.note || '暂无' }}</li>
+            <li>
+              <span>最后登录时间:</span>
+              {{ userMessage?.Users.last_login_time }}
+            </li>
           </ul>
           <div class="send">
             <el-button type="primary" @click="cleartSession">发消息</el-button>
@@ -236,7 +249,7 @@ const cleartSession = () => {
         justify-content: center;
         background-color: #e6e6e6;
         cursor: pointer;
-        &:hover{
+        &:hover {
           background-color: #dad8d8;
         }
       }
@@ -395,9 +408,9 @@ const cleartSession = () => {
           border-top: 1px solid #eee;
           border-bottom: 1px solid #eee;
           margin-top: 15px;
-          li{
+          li {
             width: 100%;
-            span{
+            span {
               display: inline-block;
               width: 100px;
             }
@@ -494,7 +507,7 @@ const cleartSession = () => {
     }
   }
 }
-.add-friend-box{
+.add-friend-box {
   position: fixed;
   top: 0;
   left: 0;
@@ -505,13 +518,13 @@ const cleartSession = () => {
   justify-content: center;
   z-index: 99;
 }
-.mask{
+.mask {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 9;
-  background-color: rgba(0,0,0,.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>

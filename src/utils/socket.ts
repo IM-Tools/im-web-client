@@ -3,6 +3,7 @@ import { sessionStore } from '@/store/session'
 import { computed } from '@vue/reactivity'
 import { timestampChange } from '@/utils'
 import { getFriendDetails } from '@/api/friend'
+import { getStorage } from '@/utils/storage'
 interface socketOptions {
   close: Function
   ws: object
@@ -19,7 +20,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
   }
   const store = sessionStore()
   const { status, data, send, open, close } = useWebSocket(
-    import.meta.env.VITE_APP_WS_API + localStorage.getItem('token'),
+    import.meta.env.VITE_APP_WS_API + getStorage('token'),
     {
       autoReconnect: {
         retries: 3,

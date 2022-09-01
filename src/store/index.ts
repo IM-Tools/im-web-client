@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import { getStorage, setStorage,removeStorage  } from '@/utils/storage'
+export { sessionStore } from './session'
+export { userStore} from './user'
 export const mainStore = defineStore('main', {
   state: () => {
     return {
@@ -14,31 +17,32 @@ export const mainStore = defineStore('main', {
           id: 1,
         },
       ],
-      themeSelect: localStorage.getItem('theme') || 'light',
-      token: localStorage.getItem('token') || '',
-      userInfo: localStorage.getItem('userInfo')
-        ? JSON.parse(localStorage.getItem('userInfo') as string)
-        : {},
+      themeSelect: getStorage('theme') || 'light',
+      token: getStorage('token') || '',
+      userInfo: getStorage('userInfo', 'object') || {}
     }
   },
   actions: {
     setTheme(theme: string) {
-      localStorage.setItem('theme', theme)
+      setStorage('theme', theme)
       this.themeSelect = theme
     },
     setToken(token: string) {
-      localStorage.setItem('token', token)
+      setStorage('token', token)
       this.token = token
     },
     async setUserInfo(data: Object) {
-      localStorage.setItem('userInfo', JSON.stringify(data))
+      setStorage('userInfo', data)
       this.userInfo = data
     },
     logOut(){
       this.token = ''
       this.userInfo = {}
-      localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
+      removeStorage('token')
+      removeStorage('userInfo')
+      removeStorage('sessionList')
+      removeStorage('selectSession')
+      removeStorage('chattingRecords')
     }
   },
 })

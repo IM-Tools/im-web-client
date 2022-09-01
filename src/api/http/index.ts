@@ -1,7 +1,7 @@
 import axios from "axios";
 import type {AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { ElMessage,ElNotification } from 'element-plus'
-
+import { getStorage } from '@/utils/storage'
 class Request {
   // axios 实例
   instance: AxiosInstance;
@@ -13,7 +13,7 @@ class Request {
     this.instance.interceptors.request.use(
       (config: AxiosRequestConfig) => {
         // 一般会请求拦截里面加token
-        const token = localStorage.getItem("token") as string;
+        const token = getStorage('token');
         config.headers!.Authorization = 'Bearer '+ token;
         let { data = {}, method } = config
         if(method === 'post' || method === 'put'){

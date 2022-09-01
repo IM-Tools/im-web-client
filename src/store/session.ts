@@ -4,26 +4,15 @@ import { chatMessage } from '@/api/chat'
 import { timestampChange } from '@/utils'
 import type { userType, sessionType } from '@/api/session/type'
 import type { chatRecordType,chatItemType } from '@/api/chat/type'
-import { resolve } from 'path'
+import router from '@/router'
+import { getStorage, setStorage } from '@/utils/storage'
+
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
-    const sessionList: sessionType<userType>[] = sessionStorage.getItem(
-      'sessionList'
-    )
-      ? JSON.parse(sessionStorage.getItem('sessionList') as string)
-      : []
-    const selectSession: sessionType<userType> = sessionStorage.getItem(
-      'selectSession'
-    )
-      ? JSON.parse(sessionStorage.getItem('selectSession') as string)
-      : {}
-    const chattingRecords: chatRecordType<chatItemType> = sessionStorage.getItem('chattingRecords')
-    ? JSON.parse(sessionStorage.getItem('chattingRecords') as string)
-    : {}
+    const sessionList: sessionType<userType>[] = getStorage('sessionList','object') || []
+    const selectSession: sessionType<userType> = getStorage('selectSession','object') || []
+    const chattingRecords: chatRecordType<chatItemType> = getStorage('chattingRecords','object') || []
     return {
-      sessionChat: localStorage.getItem('sessionChat')
-        ? JSON.parse(localStorage.getItem('sessionInfo') as string)
-        : {},
       sessionList,
       selectSession,
       chattingRecords,
@@ -39,7 +28,7 @@ export const sessionStore = defineStore('sessionStore', {
         return
       }
       const res = await sessionList()
-      sessionStorage.setItem('sessionList', JSON.stringify(res))
+      setStorage('sessionList', res)
       this.sessionList = res.map( item => {
         const time = new Date()
         const option = {
@@ -58,17 +47,18 @@ export const sessionStore = defineStore('sessionStore', {
       if (type === 'add') {
         let isAdd: boolean = false
         this.sessionList.forEach((item) => {
-          if (item.id !== session.id) {
+          if (item.id === session.id) {
             isAdd = true
           }
         })
-        if (isAdd) {
+        if (!isAdd) {
           this.sessionList.push(session)
-          sessionStorage.setItem(
-            'sessionList',
-            JSON.stringify(this.sessionList)
-          )
+          setStorage('sessionList', this.sessionList)
         }
+        // 改变选中的会话
+        this.selectSession = session
+        setStorage('selectSession', session)
+        router.push('/session')
       }
       if (type === 'delete') {
         const idx: number = this.sessionList.findIndex((item) => {
@@ -76,10 +66,7 @@ export const sessionStore = defineStore('sessionStore', {
         })
         if (idx >= 0) {
           this.sessionList.splice(idx, 1)
-          sessionStorage.setItem(
-            'sessionList',
-            JSON.stringify(this.sessionList)
-          )
+          setStorage('sessionList', this.sessionList)
         }
       }
       if(type === 'send'){
@@ -89,19 +76,13 @@ export const sessionStore = defineStore('sessionStore', {
         console.log('send',this.sessionList[idx]);
         if (idx >= 0) {
           this.sessionList[idx].last_message = session.last_message
-          sessionStorage.setItem(
-            'sessionList',
-            JSON.stringify(this.sessionList)
-          )
+          setStorage('sessionList', this.sessionList)
         }
       }
     },
     setSelectSession(session: sessionType<userType>) {
       this.selectSession = session
-      sessionStorage.setItem(
-        'selectSession',
-        JSON.stringify(this.selectSession)
-      )
+      setStorage('sessionList', this.selectSession)
     },
     async setChattingRecords(session: sessionType<userType>) {
       const message = await chatMessage({
@@ -118,10 +99,7 @@ export const sessionStore = defineStore('sessionStore', {
         from_id: session.form_id
       }
       this.chattingRecords = chatRecord
-      sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
-      // return new Promise((resolve, reject) => {
-      //   resolve(true)
-      // })
+      setStorage('chattingRecords', this.chattingRecords)
       return true
     },
     async moreRecord(session: sessionType<userType>, chatId: number){
@@ -139,13 +117,16 @@ export const sessionStore = defineStore('sessionStore', {
         from_id: session.form_id
       }
       this.chattingRecords = chatRecord
-      sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
+      setStorage('chattingRecords', this.chattingRecords)
     },
     changeChattingRecords(message: chatItemType){
       if(message.form_id === this.chattingRecords.id || message.form_id === this.chattingRecords.from_id){
         this.chattingRecords.list.push(message)
-        sessionStorage.setItem('chattingRecords', JSON.stringify(this.chattingRecords))
+        setStorage('chattingRecords', this.chattingRecords)
       }
+      return new Promise(resolve => {
+        resolve(true)
+      })
     }
   },
 })

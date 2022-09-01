@@ -78,7 +78,10 @@ const sendMsg = () => {
       to_id: res.to_id,
       status: 1,
     }
-    store.changeChattingRecords(chatMsg)
+    const result = store.changeChattingRecords(chatMsg)
+    result.then( () => {
+      onScrollMsg()
+    })
     // 会话列表记录
     const sessionMsg = Object.assign(selectSession.value, {
       last_message: {
