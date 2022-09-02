@@ -14,7 +14,10 @@ import '@/assets/css/base.css'
 import '@/assets/css/theme.less'
 
 import App from './App.vue'
+import svgIcon from '@/assets/svg/index.vue'
 const app = createApp(App)
+import 'virtual:svg-icons-register'
+app.component('svg-icon', svgIcon)
 app.use(pinia)
 app.use(router)
 app.use(ElementPlus)
