@@ -18,7 +18,7 @@ export function friendRecordList(params?: Object) {
 }
 //同意/拒绝好友请求
 export function friendRecord(data: friendRecordType) {
-  return request.put<friendType<userType>[]>('/friends/record', data)
+  return request.put<friendType<userType>>('/friends/record', data)
 }
 // 查询非好友列表
 export function getUserList(params?: { email: string}){

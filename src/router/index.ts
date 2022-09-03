@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { getStorage } from '@/utils/storage'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -49,7 +50,7 @@ const router = createRouter({
 })
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+  const token = getStorage('token')
   if (to.path === '/login' && token) {
     next('/')
     return

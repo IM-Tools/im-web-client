@@ -2,19 +2,17 @@
 import { ref } from 'vue'
 // icon图标
 import { Search, Plus } from '@element-plus/icons-vue'
-import {
-  friendRecordList,
-  friendList,
-  friendRecord,
-} from '@/api/friend'
+import { friendRecordList, friendRecord } from '@/api/friend'
 import { createSession } from '@/api/session'
 import { sessionStore } from '@/store/session'
-import type {
-  requestListType,
-  userType,
-  friendType,
-} from '@/api/friend/type'
+import { mainStore, userStore } from '@/store'
+import { computed } from '@vue/reactivity'
+import type { requestListType, userType, friendType } from '@/api/friend/type'
 import AddFriend from '@/components/AddFriend.vue'
+const usersStore = userStore()
+// 获取用户信息
+const baseStore = mainStore()
+const userInfo = baseStore.userInfo
 // 是否添加好友
 const isAddFriend = ref(false)
 const addBtnClick = () => {
@@ -27,36 +25,39 @@ const closeAddFriend = () => {
 const store = sessionStore()
 // 搜索内容
 const searchCnt = ref<string>()
-const selectName = ref<string>('addFriend')
+
 // 用户点击事件
-const userMessage = ref<friendType<userType>>()
 const userClick = (user: friendType<userType>) => {
-  selectName.value = 'userList'
-  userMessage.value = user
-  console.log(user);
+  console.log(user)
+
+  usersStore.setSelectName('userList')
+  usersStore.setSelectUser(user)
+  // userMessage.value = user
+  // console.log(user);
 }
 // 请求列表
 const requestList = ref<requestListType<userType>[]>()
-const addFriendClick = async () => {
-  selectName.value = 'addFriend'
+const newFriendClick = async () => {
+  usersStore.setSelectName('newFriend')
   // 获得好友请求列表
   friendRecordList().then((res) => {
     console.log(res)
-    requestList.value = res
+    requestList.value = res.filter((item) => {
+      return item.form_id !== userInfo.id
+    })
   })
 }
 
+// 获取请求列表
+usersStore.setUserList()
+// 获取选中名
+const selectName = computed(() => usersStore.selectName)
+// 获取选中好友
+const userMessage = computed(() => usersStore.selectUser)
 // 获取好友列表
-const myFriendList = ref<friendType<userType>[]>()
-const getFriendList = () => {
-  friendList().then((res) => {
-    myFriendList.value = res
-    console.log(res)
-  })
-}
-getFriendList()
-if (selectName.value === 'addFriend') {
-  addFriendClick()
+const myFriendList = computed(() => usersStore.userList)
+if (selectName.value === 'newFriend') {
+  newFriendClick()
 }
 
 // 同意/拒绝好友请求
@@ -66,19 +67,21 @@ const friendRequestClick = (id: number, num: number) => {
     status: num,
   }).then((res) => {
     console.log(res)
-    getFriendList()
-    addFriendClick()
+    newFriendClick()
+    if(num === 1){
+      usersStore.changeUserList(res)
+    }
   })
 }
 
 // 创建会话
 const cleartSession = () => {
-  console.log('创建会话');
+  console.log('创建会话')
   createSession({
-    id: userMessage.value?.Users.id ||-1,
-    type: 1
-  }).then( res => {
-    console.log(res);
+    id: userMessage.value?.Users.id || -1,
+    type: 1,
+  }).then((res) => {
+    console.log(res)
     store.changeSessionList(res, 'add')
   })
 }
@@ -92,7 +95,7 @@ const cleartSession = () => {
           <el-input
             v-model="searchCnt"
             class="w-50 m-2"
-            placeholder="Type something"
+            placeholder="搜索"
             :prefix-icon="Search"
           />
         </div>
@@ -101,43 +104,32 @@ const cleartSession = () => {
         </div>
       </div>
       <div class="list">
-        <div class="new-friend" @click="addFriendClick">
+        <div class="new-friend" @click="newFriendClick">
           <p>新的朋友</p>
           <div
             class="add-friend"
-            :class="{ select: selectName === 'addFriend' }"
+            :class="{ select: selectName === 'newFriend' }"
           >
             <div class="icon">
-              <svg
-                t="1658910042098"
-                class="icon"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                p-id="2307"
-                width="200"
-                height="200"
-              >
-                <path
-                  d="M762.88 937.984q-43.008 0-81.408-16.384t-67.072-45.056-45.056-67.072-16.384-81.408 16.384-81.408 45.056-66.56 67.072-44.544 81.408-16.384 81.408 16.384 66.56 44.544 44.544 66.56 16.384 81.408-16.384 81.408-44.544 67.072-66.56 45.056-81.408 16.384zM866.304 694.272l-75.776 0 0-70.656q0-14.336-9.216-24.576t-23.552-10.24-22.528 10.24-8.192 24.576l0 70.656-66.56 0q-14.336 0-24.576 10.24t-10.24 24.576 10.24 21.504 24.576 7.168l66.56 0 0 72.704q0 14.336 8.192 24.576t22.528 10.24 23.552-10.24 9.216-24.576l0-72.704 75.776 0 0 2.048q14.336 0 24.576-8.192t10.24-22.528-10.24-24.576-24.576-10.24zM613.376 439.296q-4.096 16.384-8.192 29.696-4.096 11.264-10.24 23.04t-13.312 17.92q-9.216 7.168-12.8 15.36t-6.144 16.896-5.632 17.92-10.24 18.432q-23.552 30.72-35.328 59.392t-16.384 55.296-2.56 52.736 8.192 50.688q4.096 18.432 12.288 38.4t24.064 40.96 40.448 40.96 61.44 38.4q-24.576 5.12-57.344 9.216-27.648 3.072-68.096 5.632t-92.672 2.56q-26.624 0-61.952-2.048t-72.704-5.12-73.728-7.168-66.56-8.704-51.2-9.728-26.112-9.216q-9.216-8.192-14.336-45.568t3.072-97.792q5.12-33.792 27.136-51.712t51.712-28.16 61.952-18.944 56.832-24.064q19.456-12.288 29.696-23.04t14.336-22.016 4.096-23.552-1.024-26.624q-2.048-21.504-14.848-33.792t-27.136-24.576q-8.192-6.144-14.336-18.432t-10.24-23.552q-5.12-13.312-8.192-29.696-7.168-2.048-13.312-6.144-5.12-4.096-11.264-12.288t-11.264-24.576q-5.12-15.36-3.584-28.672t5.632-22.528q4.096-11.264 11.264-19.456 0-34.816 4.096-69.632 4.096-29.696 12.8-63.488t28.16-60.416q18.432-25.6 39.424-41.984t43.52-25.6 45.056-12.8 43.008-3.584q26.624 0 51.2 6.144t45.568 16.384 37.376 23.04 26.624 26.112q23.552 29.696 34.304 65.536t15.872 67.584q5.12 36.864 4.096 73.728 6.144 5.12 10.24 12.288 4.096 6.144 6.144 16.384t0 25.6q-2.048 19.456-8.192 30.72t-13.312 17.408q-8.192 7.168-17.408 10.24z"
-                  p-id="2308"
-                ></path>
-              </svg>
+              <svg-icon name="add" color="#fff"/>
             </div>
             <p>新的朋友</p>
           </div>
         </div>
         <ul>
           <li
-            v-for="item in myFriendList" :key="item.id"
-            :class="{ select: selectName !== 'addFriend' &&  userMessage?.id === item.id}"
+            v-for="item in myFriendList"
+            :key="item.id"
+            :class="{
+              select: selectName !== 'newFriend' && userMessage?.id === item.id,
+            }"
             @click="userClick(item)"
           >
             <div class="img">
               <img :src="item.Users.avatar" alt="" />
             </div>
             <div class="user">
-              <div class="name">{{item.Users.name}}</div>
+              <div class="name">{{ item.Users.name }}</div>
             </div>
           </li>
         </ul>
@@ -146,20 +138,27 @@ const cleartSession = () => {
     <div class="session-cnt">
       <div class="chat-top"></div>
       <div class="user-message">
-        <div class="box" v-if="selectName !== 'addFriend'">
+        <div class="box" v-if="selectName !== 'newFriend'">
           <div class="message">
             <div class="avatar">
               <img :src="userMessage?.Users.avatar" alt="" />
             </div>
             <div class="user-info">
-              <div class="name">{{userMessage?.Users.name}}</div>
-              <div class="account">邮箱：{{userMessage?.Users.email}}</div>
-              <div class="address">性别：{{['未知','男','女'][userMessage?.Users.sex as number]}}</div>
+              <div class="name">{{ userMessage?.Users.name }}</div>
+              <div class="account">邮箱：{{ userMessage?.Users.email }}</div>
+              <div class="address">
+                性别：{{
+                  ['未知', '男', '女'][userMessage?.Users.sex as number]
+                }}
+              </div>
             </div>
           </div>
           <ul>
-            <li><span>昵称:</span> {{userMessage?.note || '暂无'}}</li>
-            <li><span>最后登录时间:</span> {{userMessage?.Users.last_login_time}}</li>
+            <li><span>昵称:</span> {{ userMessage?.note || '暂无' }}</li>
+            <li>
+              <span>最后登录时间:</span>
+              {{ userMessage?.Users.last_login_time }}
+            </li>
           </ul>
           <div class="send">
             <el-button type="primary" @click="cleartSession">发消息</el-button>
@@ -236,7 +235,7 @@ const cleartSession = () => {
         justify-content: center;
         background-color: #e6e6e6;
         cursor: pointer;
-        &:hover{
+        &:hover {
           background-color: #dad8d8;
         }
       }
@@ -277,13 +276,6 @@ const cleartSession = () => {
             justify-content: center;
             background-color: #cf7f23;
             border-radius: 3px;
-            svg {
-              width: 30px;
-              height: 30px;
-              path {
-                fill: #fff;
-              }
-            }
           }
           p {
             font-size: 16px;
@@ -395,9 +387,9 @@ const cleartSession = () => {
           border-top: 1px solid #eee;
           border-bottom: 1px solid #eee;
           margin-top: 15px;
-          li{
+          li {
             width: 100%;
-            span{
+            span {
               display: inline-block;
               width: 100px;
             }
@@ -494,7 +486,7 @@ const cleartSession = () => {
     }
   }
 }
-.add-friend-box{
+.add-friend-box {
   position: fixed;
   top: 0;
   left: 0;
@@ -505,13 +497,13 @@ const cleartSession = () => {
   justify-content: center;
   z-index: 99;
 }
-.mask{
+.mask {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 9;
-  background-color: rgba(0,0,0,.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 </style>

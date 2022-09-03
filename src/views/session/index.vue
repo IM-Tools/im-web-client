@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onUpdated, ref } from 'vue'
+import { onMounted, onUpdated, ref } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
-import { Search, Plus, Picture } from '@element-plus/icons-vue'
+import { Search, Plus, Picture,Folder } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
@@ -35,19 +35,26 @@ const sessionClick = (session: sessionType<userType>) => {
   store.setSelectSession(session)
   // 获取聊天记录
   const result = store.setChattingRecords(session)
-  result.then( res => {
+  result.then( () => {
     onScrollMsg()
   })
 }
+onMounted( () => {
+  onScrollMsg()
+})
 // 查看更多聊天记录
 const moreRecord = () => {
   isMore.value = true
   const id = chattingRecords.value.list[0].id
   store.moreRecord(selectSession.value, id)
 }
+// 发送图片或文件
+function fileChange(){
+  sendMsg(3)
+}
 // 发送聊天内容
 const sendContent = ref<string>()
-const sendMsg = () => {
+const sendMsg = (msgType: number = 1) => {
   console.log(sendContent.value)
   if (!sendContent.value) {
     return
@@ -55,7 +62,7 @@ const sendMsg = () => {
   const time = new Date()
   sendChatMessage({
     msg_client_id: time.getTime(),
-    msg_type: 1,
+    msg_type: msgType,
     to_id: selectSession.value?.to_id,
     channel_type: 1,
     message: sendContent.value,
@@ -78,7 +85,10 @@ const sendMsg = () => {
       to_id: res.to_id,
       status: 1,
     }
-    store.changeChattingRecords(chatMsg)
+    const result = store.changeChattingRecords(chatMsg)
+    result.then( () => {
+      onScrollMsg()
+    })
     // 会话列表记录
     const sessionMsg = Object.assign(selectSession.value, {
       last_message: {
@@ -111,6 +121,7 @@ onUpdated(() => {
 const defaultTime = ref<string>('')
 const time = new Date()
 defaultTime.value = timestampChange(time, 'mm:ss')
+
 </script>
 
 <template>
@@ -200,13 +211,14 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         <div class="tool">
           <ul>
             <li>
-              <el-icon><Picture /></el-icon>
+              <el-icon><Folder /></el-icon>
+              <input type="file" class="file" name="file" @change="fileChange" ref="imgFile" />
             </li>
             <li>
               <el-icon><Picture /></el-icon>
             </li>
             <li>
-              <el-icon><Picture /></el-icon>
+              <svg-icon name="smile" color="#666"/>
             </li>
           </ul>
         </div>
@@ -218,7 +230,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           ></textarea>
         </div>
         <div class="btn">
-          <span @click="sendMsg">发送</span>
+          <span @click="sendMsg(1)">发送</span>
         </div>
       </div>
     </div>
@@ -487,6 +499,16 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             font-size: 24px;
             color: #666;
             margin-right: 10px;
+            position: relative;
+            .file{
+              display: block;
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              opacity: 0;
+            }
           }
         }
       }
@@ -494,7 +516,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         width: 100%;
         height: 95px;
         background-color: pink;
-        textarea {
+        #textarea {
           width: 100%;
           height: 100%;
           border: none;
