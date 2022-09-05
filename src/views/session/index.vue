@@ -5,7 +5,7 @@ import { mainStore } from '@/store'
 // icon图标
 import { Search, Plus, Picture,Folder } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
-import { sendChatMessage } from '@/api/chat'
+import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
 const store = sessionStore()
@@ -49,8 +49,14 @@ const moreRecord = () => {
   store.moreRecord(selectSession.value, id)
 }
 // 发送图片或文件
-function fileChange(){
-  sendMsg(3)
+function fileChange(file: any){
+  console.log(file);
+  const formData = new FormData()
+  formData.append('file', file.target.files[0])
+  uploadFile({file: file.target.files[0]}).then( res => {
+    console.log(res);
+    
+  })
 }
 // 发送聊天内容
 const sendContent = ref<string>()

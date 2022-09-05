@@ -88,6 +88,7 @@ initWebsocket(() => {
         justify-content: center;
         align-items: center;
         color: var(--icon-color);
+        cursor: pointer;
       }
       .select{
         color: var(--icon-select-color);

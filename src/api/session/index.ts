@@ -8,4 +8,8 @@ export function sessionList(params?: Object) {
 export function createSession(data: sessionData) {
   return request.post<sessionType<userType>>('/sessions', data)
 }
+// 移除会话
+export function removeSession(id: number){
+  return request.delete(`/sessions/${id}`)
+}
 

@@ -8,6 +8,10 @@ export function friendList(params?: Object) {
 export function recordFriend(data: recordFriend) {
   return request.post('/friends/record', data)
 }
+//删除好友
+export function deleteFriend(id: number) {
+  return request.delete(`/friends/${id}`)
+}
 // 获取好友详情
 export function getFriendDetails(params: number) {
   return request.get(`/user/${params}`)

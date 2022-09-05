@@ -22,11 +22,13 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
-      host: '0.0.0.0',
       open: false,
       https: false,
       proxy: {
         '/api': {
+          changeOrigin: true,
+          secure: false,
+          // ws: true,
           target: env.VITE_APP_BASE_API,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
