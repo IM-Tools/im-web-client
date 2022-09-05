@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
-      createSvgIconsPlugin ({
+      createSvgIconsPlugin({
         // 指定要缓存的文件夹
         iconDirs: [resolve(process.cwd(), 'src/assets/svg/icons')],
         // 指定symbolId格式
@@ -25,9 +25,11 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       open: false,
       https: false,
+      cors: true,
       proxy: {
         '/api': {
           target: env.VITE_APP_BASE_API,
+          changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
