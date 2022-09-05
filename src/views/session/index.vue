@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
-import { Search, Plus, Picture,Folder } from '@element-plus/icons-vue'
+import { Search, Plus, Picture, Folder, Close } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
+import Emoji from '@/components/emoji/Emoji.vue'
+import { removeSession } from '@/api/session'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -35,34 +37,23 @@ const sessionClick = (session: sessionType<userType>) => {
   store.setSelectSession(session)
   // 获取聊天记录
   const result = store.setChattingRecords(session)
-  result.then( () => {
+  result.then(() => {
     onScrollMsg()
   })
 }
-onMounted( () => {
-  onScrollMsg()
-})
+
 // 查看更多聊天记录
 const moreRecord = () => {
   isMore.value = true
   const id = chattingRecords.value.list[0].id
   store.moreRecord(selectSession.value, id)
 }
-// 发送图片或文件
-function fileChange(file: any){
-  console.log(file);
-  const formData = new FormData()
-  formData.append('file', file.target.files[0])
-  uploadFile({file: file.target.files[0]}).then( res => {
-    console.log(res);
-    
-  })
-}
+
 // 发送聊天内容
 const sendContent = ref<string>()
-const sendMsg = (msgType: number = 1) => {
+const sendMsg = (msgType: number = 1, message?: string) => {
   console.log(sendContent.value)
-  if (!sendContent.value) {
+  if (!sendContent.value && msgType === 1) {
     return
   }
   const time = new Date()
@@ -71,7 +62,7 @@ const sendMsg = (msgType: number = 1) => {
     msg_type: msgType,
     to_id: selectSession.value?.to_id,
     channel_type: 1,
-    message: sendContent.value,
+    message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
     // 聊天记录
     const chatMsg = {
@@ -92,7 +83,7 @@ const sendMsg = (msgType: number = 1) => {
       status: 1,
     }
     const result = store.changeChattingRecords(chatMsg)
-    result.then( () => {
+    result.then(() => {
       onScrollMsg()
     })
     // 会话列表记录
@@ -106,14 +97,60 @@ const sendMsg = (msgType: number = 1) => {
     sendContent.value = ''
   })
 }
-
-
+// 发送图片或文件
+const fileRef = ref<any>(null)
+function fileChange(file: any) {
+  const formData = new FormData()
+  formData.append('file', file.target.files[0])
+  uploadFile({ file: file.target.files[0] }).then((res) => {
+    sendMsg(3, res.file_url)
+    // 清空选中的文件
+    fileRef.value.value = ''
+  })
+}
+// 表情
+const isShowEmoji = ref<boolean>(false)
+const textarea = ref<any>(null)
+function onSelectEmoji(emo: string){
+  sendContent.value = sendContent.value ? sendContent.value + emo : emo
+  isShowEmoji.value = false
+  textarea.value && textarea.value.focus()
+}
+onMounted(() => {
+  onScrollMsg()
+  textarea.value && textarea.value.focus()
+})
+// 获取文件类型
+function getFileType(url: string): Array<string> {
+  const type = url.substring(url.lastIndexOf('.') + 1)
+  const imgType = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'apng', 'webp']
+  if (imgType.indexOf(type) !== -1) {
+    // 图片
+    return ['image', type]
+  } else {
+    // 其他文件
+    return ['other', type]
+  }
+}
+// 获取文件名
+function getFileName(url: string) {
+  return url.substring(url.lastIndexOf('/') + 1)
+}
+// 下载文件
+function downloadFile(url: string){
+  const a = document.createElement('a');
+  //  target="_blank"
+  a.setAttribute('href', url);
+  a.setAttribute('target', "_blank");
+  a.setAttribute('download', getFileName(url));
+  a.click();
+}
 // 修改滚动距离
 const chatWarp = ref<any>(null)
 const chatContent = ref<any>(null)
 function onScrollMsg() {
-  if(isMore.value){
-    return    
+  if (isMore.value) {
+    return
   }
   const height = chatContent.value && chatContent.value.clientHeight
   if (!chatWarp.value) {
@@ -121,13 +158,16 @@ function onScrollMsg() {
   }
   chatWarp.value.scrollTop = height
 }
-onUpdated(() => {
-  
-})
+// 移除会话
+function handleRemoveSession(session: sessionType<userType>){
+  // console.log(session);
+  removeSession(session.id).then( () => {
+    store.changeSessionList(session, 'delete')
+  })
+}
 const defaultTime = ref<string>('')
 const time = new Date()
 defaultTime.value = timestampChange(time, 'mm:ss')
-
 </script>
 
 <template>
@@ -171,6 +211,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
               {{ item.last_message ? item.last_message.content : '开始聊天' }}
             </div>
           </div>
+          <div class="close" @click="handleRemoveSession(item)"><el-icon><Close /></el-icon></div>
         </li>
       </ul>
     </div>
@@ -203,8 +244,28 @@ defaultTime.value = timestampChange(time, 'mm:ss')
               <div class="chat-cnt" v-if="item.msg_type === 1">
                 {{ item.msg }}
               </div>
-              <div class="chat-img" v-if="item.msg_type === 2">
-                <img :src="item.msg" alt="" />
+              <div
+                class="chat-img"
+                v-if="
+                  item.msg_type === 3 && getFileType(item.msg)[0] === 'image'
+                "
+              >
+                <img :src="item.msg" alt="" @load="onScrollMsg" />
+              </div>
+              <div
+                class="chat-file"
+                v-if="
+                  item.msg_type === 3 && getFileType(item.msg)[0] === 'other'
+                "
+                @click="downloadFile(item.msg)"
+              >
+                <div class="file">
+                  <div class="file-name">{{ getFileName(item.msg) }}</div>
+                  <div class="icon">
+                    <svg-icon name="file" color="#eee" />
+                    <span>{{ getFileType(item.msg)[1] }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </li>
@@ -218,13 +279,27 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           <ul>
             <li>
               <el-icon><Folder /></el-icon>
-              <input type="file" class="file" name="file" @change="fileChange" ref="imgFile" />
+              <input
+                type="file"
+                class="file"
+                name="file"
+                @change="fileChange"
+                ref="fileRef"
+              />
             </li>
             <li>
               <el-icon><Picture /></el-icon>
+              <input
+                type="file"
+                class="file"
+                name="file"
+                @change="fileChange"
+                ref="fileRef"
+                accept="image/*"
+              />
             </li>
-            <li>
-              <svg-icon name="smile" color="#666"/>
+            <li @click="isShowEmoji = !isShowEmoji">
+              <svg-icon name="smile" color="#666" />
             </li>
           </ul>
         </div>
@@ -233,10 +308,14 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             id="textarea"
             v-model="sendContent"
             @keydown.enter="handleKeyDown"
+            ref="textarea"
           ></textarea>
         </div>
         <div class="btn">
           <span @click="sendMsg(1)">发送</span>
+        </div>
+        <div class="emoji" v-if="isShowEmoji">
+          <Emoji @onSelectEmoji="onSelectEmoji"></Emoji>
         </div>
       </div>
     </div>
@@ -290,6 +369,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         height: 65px;
         align-items: center;
         justify-content: center;
+        position: relative;
         cursor: pointer;
         &:hover {
           background-color: #e2e2e2;
@@ -357,6 +437,27 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             user-select: text;
           }
         }
+        .close{
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background-color: #eee;
+          position: absolute;
+          top: 23px;
+          right: 15px;
+          align-items: center;
+          justify-content: center;
+          display: none;
+          &:hover{
+            background-color: #eb2d2d;
+            color: #fff;
+          }
+        }
+        &:hover{
+          .close{
+            display: flex;
+          }
+        }
       }
       .sessionTop {
         background-color: #eeeeee !important;
@@ -391,7 +492,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         span {
           color: #6084e7;
           cursor: pointer;
-          &:hover{
+          &:hover {
             color: #2a57d3;
           }
         }
@@ -440,6 +541,51 @@ defaultTime.value = timestampChange(time, 'mm:ss')
               max-width: 100%;
             }
           }
+          .chat-file {
+            cursor: pointer;
+            max-width: 230px;
+            .file {
+              display: flex;
+              justify-content: space-between;
+              padding: 10px 15px;
+              background-color: #fff;
+              align-items: center;
+              border-radius: 5px;
+              color: #333;
+              &:hover {
+                background-color: #f0efef;
+              }
+              .file-name {
+                max-height: 50px;
+                flex: 1;
+                line-height: 25px;
+                font-size: 14px;
+                margin-right: 10px;
+                box-sizing: border-box;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+              }
+              .icon {
+                width: 43px;
+                height: 43px;
+                position: relative;
+                .svg-icon {
+                  width: 100%;
+                  height: 100%;
+                }
+                span {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  font-size: 12px;
+                }
+              }
+            }
+          }
         }
       }
       .none {
@@ -485,6 +631,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       box-sizing: border-box;
       border-top: 1px solid #e8eaec;
       background-color: #f9f9f9;
+      position: relative;
       .tool {
         width: 100%;
         box-sizing: border-box;
@@ -506,7 +653,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             color: #666;
             margin-right: 10px;
             position: relative;
-            .file{
+            .file {
               display: block;
               position: absolute;
               top: 0;
@@ -552,6 +699,13 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           color: #333;
           cursor: pointer;
         }
+      }
+      .emoji{
+        position: absolute;
+        bottom: 190px;
+        left: 20px;
+        width: 300px;
+        min-height: 200px;
       }
     }
   }

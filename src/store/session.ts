@@ -64,9 +64,15 @@ export const sessionStore = defineStore('sessionStore', {
         const idx: number = this.sessionList.findIndex((item) => {
           return item.id === session.id
         })
+        // 移除对应会话
         if (idx >= 0) {
           this.sessionList.splice(idx, 1)
           setStorage('sessionList', this.sessionList)
+        }
+        // 判断是否是选中的会话
+        if(this.selectSession.id === session.id){
+          this.selectSession = this.sessionList[0] || {}
+          setStorage('selectSession', this.selectSession)
         }
       }
       if(type === 'send'){
@@ -82,7 +88,7 @@ export const sessionStore = defineStore('sessionStore', {
     },
     setSelectSession(session: sessionType<userType>) {
       this.selectSession = session
-      setStorage('sessionList', this.selectSession)
+      setStorage('selectSession', this.selectSession)
     },
     async setChattingRecords(session: sessionType<userType>) {
       const message = await chatMessage({

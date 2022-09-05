@@ -14,6 +14,7 @@ import '@/assets/css/base.css'
 import '@/assets/css/theme.less'
 
 import App from './App.vue'
+// svg引入
 import svgIcon from '@/assets/svg/index.vue'
 const app = createApp(App)
 import 'virtual:svg-icons-register'
