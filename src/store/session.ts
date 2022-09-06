@@ -9,6 +9,7 @@ import { getStorage, setStorage } from '@/utils/storage'
 
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
+    const scrollType: boolean = true
     const sessionList: sessionType<userType>[] = getStorage('sessionList','object') || []
     const selectSession: sessionType<userType> = getStorage('selectSession','object') || []
     const chattingRecords: chatRecordType<chatItemType> = getStorage('chattingRecords','object') || []
@@ -16,9 +17,15 @@ export const sessionStore = defineStore('sessionStore', {
       sessionList,
       selectSession,
       chattingRecords,
+      scrollType
     }
   },
   actions: {
+    startScroll(){
+      console.log(223366);
+      
+      this.scrollType = !this.scrollType
+    },
     async setSessionList() {
       if (this.sessionList[0]) {
         if (!this.selectSession.id) {

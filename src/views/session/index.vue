@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
@@ -41,7 +41,11 @@ const sessionClick = (session: sessionType<userType>) => {
     onScrollMsg()
   })
 }
-
+const scrollType = computed(() => store.scrollType)
+watch(scrollType, () => {
+  console.log('滚动');
+  onScrollMsg()
+})
 // 查看更多聊天记录
 const moreRecord = () => {
   isMore.value = true

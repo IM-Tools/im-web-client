@@ -32,6 +32,10 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         },
       },
       onConnected(ws) {
+        // 心跳
+        setInterval(() => {
+          send('{"msg_code": 1004,"message":"ping"}')
+        },10000)
         console.log('onConnected', ws)
         wsObj = { ws, close, send }
         openBack && openBack()
@@ -40,11 +44,11 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         // 选中的会话
         const selectSession = computed(() => store.selectSession)
         // console.log('event', event)
+        if(!event.data){
+          return
+        }
         const message = JSON.parse(event.data)
         switch (message.msg_code) {
-          case 2002:
-            send('{"type":"pong"}')
-            break
           case 200:
             console.log('聊天消息', message)
             const time = new Date()
@@ -66,9 +70,12 @@ function initWebsocket(openBack: Function, closeBack: Function) {
               to_id: message.to_id,
               status: 1,
             }
-            store.changeChattingRecords(chatMsg)
+            // 聊天记录
+            const result = store.changeChattingRecords(chatMsg)
+            result.then( () => {
+              store.startScroll()
+            })
             // 会话列表记录
-            console.log('会话列表记录',selectSession.value);
             const sessionMsg = Object.assign(selectSession.value, {
               last_message: {
                 content: message.message,
