@@ -9,6 +9,7 @@ import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
+import { ElMessage } from 'element-plus'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -59,6 +60,13 @@ const moreRecord = () => {
 // 发送聊天内容
 const sendContent = ref<string>()
 const sendMsg = (msgType: number = 1, message?: string) => {
+  if(!selectSession.value.id){
+    ElMessage({
+      type: 'warning',
+      message: '暂无聊天对象'
+    })
+    return
+  }
   console.log(sendContent.value)
   if (!sendContent.value && msgType === 1) {
     return
