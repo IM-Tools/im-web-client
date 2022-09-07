@@ -8,6 +8,7 @@ import { sessionStore } from '@/store/session'
 import { mainStore, userStore } from '@/store'
 import { computed } from '@vue/reactivity'
 import type { requestListType, userType, friendType } from '@/api/friend/type'
+import type { menuType } from '@/directive/type'
 import AddFriend from '@/components/AddFriend.vue'
 const usersStore = userStore()
 // 获取用户信息
@@ -66,9 +67,8 @@ const friendRequestClick = (id: number, num: number) => {
     id: id,
     status: num,
   }).then((res) => {
-    console.log(res)
     newFriendClick()
-    if(num === 1){
+    if (num === 1) {
       usersStore.changeUserList(res)
     }
   })
@@ -85,6 +85,22 @@ const cleartSession = () => {
     store.changeSessionList(res, 'add')
   })
 }
+// 右键菜单
+const menuLists = ref<menuType[]>([
+  {
+    name: '置顶',
+    method: (item: friendType<userType>) => {
+      console.log(item)
+    },
+  },
+  {
+    name: '删除',
+    method: (item: friendType<userType>) => {
+      console.log(item)
+      usersStore.changeUserList(item, 'delete')
+    },
+  },
+])
 </script>
 
 <template>
@@ -111,7 +127,7 @@ const cleartSession = () => {
             :class="{ select: selectName === 'newFriend' }"
           >
             <div class="icon">
-              <svg-icon name="add" color="#fff"/>
+              <svg-icon name="add" color="#fff" />
             </div>
             <p>新的朋友</p>
           </div>
@@ -124,6 +140,7 @@ const cleartSession = () => {
               select: selectName !== 'newFriend' && userMessage?.id === item.id,
             }"
             @click="userClick(item)"
+            v-customMenu="{ menuLists, val: item }"
           >
             <div class="img">
               <img :src="item.Users.avatar" alt="" />

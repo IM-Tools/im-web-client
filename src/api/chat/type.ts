@@ -22,7 +22,8 @@ export interface chatItemType{
   msg: string
   msg_type: number
   status: number
-  to_id: number
+  to_id: number,
+  isShowTime?: boolean,
   Users: {
     avatar: string
     email: string

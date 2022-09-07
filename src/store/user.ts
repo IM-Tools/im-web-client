@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import { friendList } from '@/api/friend'
+import { friendList,deleteFriend } from '@/api/friend'
 import { getStorage, setStorage  } from '@/utils/storage'
 import type { friendType, userType } from '@/api/friend/type'
+import { sessionStore } from './session'
 export const userStore = defineStore('user', {
   state: () => {
     const userList: friendType<userType>[] = getStorage('userList','object') || []
-    const selectUser: friendType<userType> = getStorage('selectUser','object') || {}
+    const selectUser: friendType<userType> | null = getStorage('selectUser','object') || {}
     const selectName: string = getStorage('selectName') || 'newFriend'
     return {
       userList,
@@ -52,6 +53,15 @@ export const userStore = defineStore('user', {
           this.userList.splice(idx, 1)
           setStorage('userList', this.userList)
         }
+        if(this.selectUser && user.id === this.selectUser.id){
+          this.selectUser = null
+        setStorage('selectUser', '')
+        }
+        deleteFriend(user.Users.id).then( () => {
+          console.log('删除成功');
+          const otherStore = sessionStore()
+          otherStore.checkSession(user.Users.id)
+        })
       }
     },
     setSelectUser(user: friendType<userType>){

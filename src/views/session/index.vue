@@ -9,7 +9,6 @@ import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
-import { removeSession } from '@/api/session'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -28,7 +27,7 @@ const sessionList = computed(() => store.sessionList)
 // 选中的会话
 const selectSession = computed(() => store.selectSession)
 // 获得聊天信息
-const chattingRecords = computed(() => store.chattingRecords)
+const chattingRecordsList = computed(() => store.chattingRecordsList)
 
 // 会话点击事件
 const sessionClick = (session: sessionType<userType>) => {
@@ -43,13 +42,17 @@ const sessionClick = (session: sessionType<userType>) => {
 }
 const scrollType = computed(() => store.scrollType)
 watch(scrollType, () => {
-  console.log('滚动');
+  console.log('滚动')
   onScrollMsg()
 })
 // 查看更多聊天记录
 const moreRecord = () => {
   isMore.value = true
-  const id = chattingRecords.value.list[0].id
+  if(!chattingRecordsList.value){
+
+    return
+  }
+  const id = chattingRecordsList.value.list[0].id
   store.moreRecord(selectSession.value, id)
 }
 
@@ -90,16 +93,44 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     result.then(() => {
       onScrollMsg()
     })
-    // 会话列表记录
-    const sessionMsg = Object.assign(selectSession.value, {
-      last_message: {
-        content: res.message,
-        time: timestampChange(time, 'HH:mm'),
-      },
-    })
-    store.changeSessionList(sessionMsg, 'send')
     sendContent.value = ''
   })
+}
+// 获取会话列表提示消息
+function getPointMsg(msgType: number = 1, message: string) {
+  if (msgType === 1) {
+    return message
+  }
+  if (msgType === 3) {
+    return getFileType(message)[0] === 'image' ? '图片...' : '文件...'
+  }
+  if (msgType === 5) {
+    return '语音...'
+  }
+}
+// 获取消息提示时间
+function getChatPotinTime(time: string) {
+  const times = time.split(' ')
+  const timeData = times[0].split('-')
+  const newTime = new Date()
+  if (parseInt(timeData[0]) < newTime.getFullYear()) {
+    return time
+  }
+  if (
+    parseInt(timeData[0]) === newTime.getFullYear() &&
+    parseInt(timeData[1]) < newTime.getMonth() + 1
+  ) {
+    return time
+  }
+  if (
+    parseInt(timeData[0]) === newTime.getFullYear() &&
+    parseInt(timeData[1]) === newTime.getMonth() + 1 &&
+    parseInt(timeData[2]) < newTime.getDate()
+  ) {
+    return time
+  } else {
+    return times[1]
+  }
 }
 // 发送图片或文件
 const fileRef = ref<any>(null)
@@ -115,7 +146,7 @@ function fileChange(file: any) {
 // 表情
 const isShowEmoji = ref<boolean>(false)
 const textarea = ref<any>(null)
-function onSelectEmoji(emo: string){
+function onSelectEmoji(emo: string) {
   sendContent.value = sendContent.value ? sendContent.value + emo : emo
   isShowEmoji.value = false
   textarea.value && textarea.value.focus()
@@ -141,13 +172,13 @@ function getFileName(url: string) {
   return url.substring(url.lastIndexOf('/') + 1)
 }
 // 下载文件
-function downloadFile(url: string){
-  const a = document.createElement('a');
+function downloadFile(url: string) {
+  const a = document.createElement('a')
   //  target="_blank"
-  a.setAttribute('href', url);
-  a.setAttribute('target', "_blank");
-  a.setAttribute('download', getFileName(url));
-  a.click();
+  a.setAttribute('href', url)
+  a.setAttribute('target', '_blank')
+  a.setAttribute('download', getFileName(url))
+  a.click()
 }
 // 修改滚动距离
 const chatWarp = ref<any>(null)
@@ -163,11 +194,8 @@ function onScrollMsg() {
   chatWarp.value.scrollTop = height
 }
 // 移除会话
-function handleRemoveSession(session: sessionType<userType>){
-  // console.log(session);
-  removeSession(session.id).then( () => {
-    store.changeSessionList(session, 'delete')
-  })
+function handleRemoveSession(session: sessionType<userType>) {
+  store.changeSessionList(session, 'delete')
 }
 const defaultTime = ref<string>('')
 const time = new Date()
@@ -215,7 +243,9 @@ defaultTime.value = timestampChange(time, 'mm:ss')
               {{ item.last_message ? item.last_message.content : '开始聊天' }}
             </div>
           </div>
-          <div class="close" @click="handleRemoveSession(item)"><el-icon><Close /></el-icon></div>
+          <div class="close" @click="handleRemoveSession(item)">
+            <el-icon><Close /></el-icon>
+          </div>
         </li>
       </ul>
     </div>
@@ -223,58 +253,65 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       <div class="chat-top"></div>
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
-          v-show="chattingRecords.list && chattingRecords.list.length > 0"
+          v-if="
+            chattingRecordsList && chattingRecordsList.list && chattingRecordsList.list.length > 0
+          "
           ref="chatContent"
         >
           <p><span @click="moreRecord">查看更多消息</span></p>
-          <li
-            v-for="item in chattingRecords.list"
-            :key="item.id"
-            :class="{ own: item.form_id === userInfo.id }"
-          >
-            <div class="avatar">
-              <img
-                :src="item.Users.avatar"
-                alt=""
-                v-if="item.form_id !== userInfo.id"
-              />
-              <img :src="userInfo.avatar" alt="" v-else />
-            </div>
-            <div class="chat-msg">
-              <div class="chat-name" v-if="item.form_id !== userInfo.id">
-                {{ item.Users.name }}
+          <li v-for="item in chattingRecordsList.list" :key="item.id">
+            <p v-if="item.isShowTime">
+              <span>{{ getChatPotinTime(item.created_at) }}</span>
+            </p>
+            <div class="box" :class="{ own: item.form_id === userInfo.id }">
+              <div class="avatar">
+                <img
+                  :src="item.Users.avatar"
+                  alt=""
+                  v-if="item.form_id !== userInfo.id"
+                />
+                <img :src="userInfo.avatar" alt="" v-else />
               </div>
-              <div class="chat-name" v-else>{{ userInfo.name }}</div>
-              <div class="chat-cnt" v-if="item.msg_type === 1">
-                {{ item.msg }}
-              </div>
-              <div
-                class="chat-img"
-                v-if="
-                  item.msg_type === 3 && getFileType(item.msg)[0] === 'image'
-                "
-              >
-                <img :src="item.msg" alt="" @load="onScrollMsg" />
-              </div>
-              <div
-                class="chat-file"
-                v-if="
-                  item.msg_type === 3 && getFileType(item.msg)[0] === 'other'
-                "
-                @click="downloadFile(item.msg)"
-              >
-                <div class="file">
-                  <div class="file-name">{{ getFileName(item.msg) }}</div>
-                  <div class="icon">
-                    <svg-icon name="file" color="#eee" />
-                    <span>{{ getFileType(item.msg)[1] }}</span>
+              <div class="chat-msg">
+                <div class="chat-name" v-if="item.form_id !== userInfo.id">
+                  {{ item.Users.name }}
+                </div>
+                <div class="chat-name" v-else>{{ userInfo.name }}</div>
+                <div class="chat-cnt" v-if="item.msg_type === 1">
+                  {{ item.msg }}
+                </div>
+                <div
+                  class="chat-img"
+                  v-if="
+                    item.msg_type === 3 && getFileType(item.msg)[0] === 'image'
+                  "
+                >
+                  <img :src="item.msg" alt="" @load="onScrollMsg" />
+                </div>
+                <div
+                  class="chat-file"
+                  v-if="
+                    item.msg_type === 3 && getFileType(item.msg)[0] === 'other'
+                  "
+                  @click="downloadFile(item.msg)"
+                >
+                  <div class="file">
+                    <div class="file-name">{{ getFileName(item.msg) }}</div>
+                    <div class="icon">
+                      <svg-icon name="file" color="#eee" />
+                      <span>{{ getFileType(item.msg)[1] }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </li>
         </ul>
-        <ul v-show="!chattingRecords.list || chattingRecords.list.length <= 0">
+        <ul
+          v-show="
+            !chattingRecordsList || !chattingRecordsList.list || chattingRecordsList.list.length <= 0
+          "
+        >
           <li class="none">暂无聊天</li>
         </ul>
       </div>
@@ -441,7 +478,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             user-select: text;
           }
         }
-        .close{
+        .close {
           width: 20px;
           height: 20px;
           border-radius: 50%;
@@ -452,13 +489,13 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           align-items: center;
           justify-content: center;
           display: none;
-          &:hover{
+          &:hover {
             background-color: #eb2d2d;
             color: #fff;
           }
         }
-        &:hover{
-          .close{
+        &:hover {
+          .close {
             display: flex;
           }
         }
@@ -488,7 +525,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       padding: 0px 10px 20px;
       box-sizing: border-box;
       overflow-y: auto;
-      p {
+      ul > p {
         width: 100%;
         font-size: 12px;
         text-align: center;
@@ -502,8 +539,22 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         }
       }
       li {
-        display: flex;
         margin-bottom: 15px;
+        p {
+          width: 100%;
+          font-size: 12px;
+          text-align: center;
+          line-height: 30px;
+          span {
+            padding: 4px 15px;
+            background-color: #eee;
+            cursor: pointer;
+            color: #a7a7a7;
+          }
+        }
+        .box {
+          display: flex;
+        }
         .avatar {
           width: 45px;
           height: 45px;
@@ -704,7 +755,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           cursor: pointer;
         }
       }
-      .emoji{
+      .emoji {
         position: absolute;
         bottom: 190px;
         left: 20px;

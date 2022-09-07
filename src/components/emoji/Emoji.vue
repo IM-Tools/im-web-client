@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import { defineEmits } from 'vue'
 import emotion from './emoji'
 const emit = defineEmits(['onSelectEmoji'])
 function onSelectEmoji(emoji: any) {

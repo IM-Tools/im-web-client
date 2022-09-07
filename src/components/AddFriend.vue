@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, defineEmits } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Close } from '@element-plus/icons-vue'
 import { getUserList, recordFriend } from '@/api/friend'
 import type { noFriendType } from '@/api/friend/type'

@@ -12,14 +12,17 @@ import 'element-plus/dist/index.css'
 import 'normalize.css/normalize.css'
 import '@/assets/css/base.css'
 import '@/assets/css/theme.less'
-
-import App from './App.vue'
 // svg引入
 import svgIcon from '@/assets/svg/index.vue'
-const app = createApp(App)
 import 'virtual:svg-icons-register'
+// 指令
+import { customMenu } from '@/directive/index'
+// vue实例
+import App from './App.vue'
+const app = createApp(App)
 app.component('svg-icon', svgIcon)
 app.use(pinia)
 app.use(router)
+app.use(customMenu)
 app.use(ElementPlus)
 app.mount('#app')
