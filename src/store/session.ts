@@ -6,7 +6,7 @@ import type { userType, sessionType } from '@/api/session/type'
 import type { chatRecordType, chatItemType } from '@/api/chat/type'
 import router from '@/router'
 import { getStorage, setStorage } from '@/utils/storage'
-
+import { getPointMsg } from '@/utils/session'
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
     const scrollType: boolean = true
@@ -96,14 +96,14 @@ export const sessionStore = defineStore('sessionStore', {
       }
     },
     // 改变提示消息
-    changeSessionPoint(id: number, message: string, createdTime: string){
+    changeSessionPoint( message: chatItemType){
       const idx: number = this.sessionList.findIndex((item) => {
-        return item.to_id === id
+        return item.to_id === message.to_id
       })
       if (idx >= 0) {
-        const time = new Date(createdTime)
+        const time = new Date(message.created_at)
         const lastMessage = {
-          content: message,
+          content: getPointMsg(message.msg_type, message.msg),
           time: timestampChange(time, 'HH:mm')
         }
         this.sessionList[idx].last_message = lastMessage
@@ -156,7 +156,7 @@ export const sessionStore = defineStore('sessionStore', {
     },
     // 发送和接收聊天记录
     changeChattingRecords(message: chatItemType) {
-      this.changeSessionPoint(message.to_id, message.msg, message.created_at)
+      this.changeSessionPoint(message)
       if(!this.chattingRecords){
         // 无聊天记录时
         const chatRecord = {

@@ -10,6 +10,7 @@ import type { userType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
+import { getFileType } from '@/utils/session'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -104,18 +105,6 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     sendContent.value = ''
   })
 }
-// 获取会话列表提示消息
-function getPointMsg(msgType: number = 1, message: string) {
-  if (msgType === 1) {
-    return message
-  }
-  if (msgType === 3) {
-    return getFileType(message)[0] === 'image' ? '图片...' : '文件...'
-  }
-  if (msgType === 5) {
-    return '语音...'
-  }
-}
 // 获取消息提示时间
 function getChatPotinTime(time: string) {
   const times = time.split(' ')
@@ -143,6 +132,13 @@ function getChatPotinTime(time: string) {
 // 发送图片或文件
 const fileRef = ref<any>(null)
 function fileChange(file: any) {
+  if(!selectSession.value.id){
+    ElMessage({
+      type: 'warning',
+      message: '暂无聊天对象'
+    })
+    return
+  }
   const formData = new FormData()
   formData.append('file', file.target.files[0])
   uploadFile({ file: file.target.files[0] }).then((res) => {
@@ -163,18 +159,7 @@ onMounted(() => {
   onScrollMsg()
   textarea.value && textarea.value.focus()
 })
-// 获取文件类型
-function getFileType(url: string): Array<string> {
-  const type = url.substring(url.lastIndexOf('.') + 1)
-  const imgType = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'apng', 'webp']
-  if (imgType.indexOf(type) !== -1) {
-    // 图片
-    return ['image', type]
-  } else {
-    // 其他文件
-    return ['other', type]
-  }
-}
+
 // 获取文件名
 function getFileName(url: string) {
   return url.substring(url.lastIndexOf('/') + 1)
