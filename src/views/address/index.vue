@@ -67,10 +67,12 @@ const friendRequestClick = (id: number, num: number) => {
     id: id,
     status: num,
   }).then((res) => {
+    console.log(res);
+    
     newFriendClick()
-    if (num === 1) {
-      usersStore.changeUserList(res)
-    }
+    // if (num === 1) {
+    //   usersStore.changeUserList(res)
+    // }
   })
 }
 
@@ -155,33 +157,39 @@ const menuLists = ref<menuType[]>([
     <div class="session-cnt">
       <div class="chat-top"></div>
       <div class="user-message">
-        <div class="box" v-if="selectName !== 'newFriend'">
+        <div class="box" v-if="selectName !== 'newFriend' && userMessage && userMessage.Users">
           <div class="message">
             <div class="avatar">
-              <img :src="userMessage?.Users.avatar" alt="" />
+              <img :src="userMessage.Users.avatar" alt="" />
             </div>
             <div class="user-info">
-              <div class="name">{{ userMessage?.Users.name }}</div>
-              <div class="account">邮箱：{{ userMessage?.Users.email }}</div>
+              <div class="name">{{ userMessage.Users.name }}</div>
+              <div class="account">邮箱：{{ userMessage.Users.email }}</div>
               <div class="address">
                 性别：{{
-                  ['未知', '男', '女'][userMessage?.Users.sex as number]
+                  ['未知', '男', '女'][userMessage.Users.sex as number]
                 }}
               </div>
             </div>
           </div>
           <ul>
-            <li><span>昵称:</span> {{ userMessage?.note || '暂无' }}</li>
+            <li><span>昵称:</span> {{ userMessage.note || '暂无' }}</li>
             <li>
               <span>最后登录时间:</span>
-              {{ userMessage?.Users.last_login_time }}
+              {{ userMessage.Users.last_login_time }}
             </li>
           </ul>
           <div class="send">
             <el-button type="primary" @click="cleartSession">发消息</el-button>
           </div>
         </div>
-        <div class="friend-request-list" v-else>
+        <div class="box" v-if="selectName !== 'newFriend' && !userMessage">
+          <div class="message">
+            <img src="@/assets/images/none.png" alt="">
+          </div>
+          <p style="text-align: center;font-size: 14px; color: #999;">暂无选择信息</p>
+        </div>
+        <div class="friend-request-list"  v-if="selectName === 'newFriend'">
           <div class="title">
             <h2>新的朋友</h2>
           </div>

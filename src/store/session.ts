@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { sessionList, removeSession } from '@/api/session'
+import { sessionList, removeSession, createSession } from '@/api/session'
 import { chatMessage } from '@/api/chat'
 import { timestampChange } from '@/utils'
 import type { userType, sessionType } from '@/api/session/type'
@@ -12,15 +12,20 @@ export const sessionStore = defineStore('sessionStore', {
     const scrollType: boolean = true
     const sessionList: sessionType<userType>[] =
       getStorage('sessionList', 'object') || []
-    const selectSession: sessionType<userType> =
-      getStorage('selectSession', 'object') || []
+    const selectSession: sessionType<userType> | null =
+      getStorage('selectSession', 'object') || null
     const chattingRecords: chatRecordType<chatItemType> | null =
       getStorage('chattingRecords', 'object') || null
+    const total: number = 0
+    const isShowMoreBtn: boolean = false
     return {
       sessionList,
       selectSession,
       chattingRecords,
       scrollType,
+      total,
+      isShowMoreBtn,
+      page: 1,
     }
   },
   actions: {
@@ -31,10 +36,6 @@ export const sessionStore = defineStore('sessionStore', {
     // 获取会话列表
     async setSessionList() {
       if (this.sessionList[0]) {
-        if (!this.selectSession.id) {
-          this.selectSession = this.sessionList[0]
-        }
-        this.setChattingRecords(this.selectSession)
         return
       }
       const res = await sessionList()
@@ -51,10 +52,10 @@ export const sessionStore = defineStore('sessionStore', {
         item.last_message = option
         return item
       })
-      if (!this.selectSession.id) {
-        this.selectSession = this.sessionList[0]
-      }
-      this.setChattingRecords(this.selectSession)
+      // if (!this.selectSession) {
+      //   this.selectSession = this.sessionList[0]
+      //   this.setChattingRecords(this.selectSession)
+      // }
     },
     // 改变会话列表
     changeSessionList(session: sessionType<userType>, type: string) {
@@ -71,6 +72,7 @@ export const sessionStore = defineStore('sessionStore', {
         }
         // 改变选中的会话
         this.selectSession = session
+        this.setChattingRecords(session)
         setStorage('selectSession', session)
         router.push('/session')
       }
@@ -83,31 +85,50 @@ export const sessionStore = defineStore('sessionStore', {
           removeSession(session.id).then(() => {
             this.sessionList.splice(idx, 1)
             setStorage('sessionList', this.sessionList)
+            // 判断是否是选中的会话
+            console.log('判断是否是选中的会话',this.selectSession, session.id);
+            
+            if (this.selectSession && this.selectSession.id === session.id) {
+              this.selectSession = null
+              setStorage('selectSession', '')
+              // 删除对应聊天记录
+              this.chattingRecords = null
+              setStorage('chattingRecords', '')
+            }
           })
-        }
-        // 判断是否是选中的会话
-        if (this.selectSession.id === session.id) {
-          this.selectSession = this.sessionList[0] || {}
-          setStorage('selectSession', this.selectSession)
-          // 删除对应聊天记录
-          this.chattingRecords = null
-          setStorage('chattingRecords', '')
         }
       }
     },
     // 改变提示消息
-    changeSessionPoint( message: chatItemType){
+    changeSessionPoint(message: chatItemType) {
       const idx: number = this.sessionList.findIndex((item) => {
         return item.to_id === message.to_id
       })
+      // 有会话记录
       if (idx >= 0) {
         const time = new Date(message.created_at)
         const lastMessage = {
           content: getPointMsg(message.msg_type, message.msg),
-          time: timestampChange(time, 'HH:mm')
+          time: timestampChange(time, 'HH:mm'),
         }
         this.sessionList[idx].last_message = lastMessage
         setStorage('sessionList', this.sessionList)
+      } else {
+        // 没有会话记录则创建会话
+        createSession({
+          id: message.form_id || -1,
+          type: 1,
+        }).then((res) => {
+          console.log(res)
+          const time = new Date(message.created_at)
+          const session = Object.assign(res, {
+            last_message: {
+              content: getPointMsg(message.msg_type, message.msg),
+              time: timestampChange(time, 'HH:mm'),
+            },
+          })
+          this.changeSessionList(session, 'add')
+        })
       }
     },
     // 设置选中会话
@@ -122,7 +143,13 @@ export const sessionStore = defineStore('sessionStore', {
         pageSize: 20,
         to_id: session.to_id,
       })
-      console.log(message)
+      this.total = message.mate.total
+      if (this.total <= this.page * 20) {
+        this.isShowMoreBtn = false
+      } else {
+        this.isShowMoreBtn = true
+      }
+      console.log(this.total)
       const isArray = message.list instanceof Array
       const chatRecord = {
         list: isArray ? message.list : [],
@@ -136,17 +163,25 @@ export const sessionStore = defineStore('sessionStore', {
     },
     // 更改聊天记录/更多聊天记录
     async moreRecord(session: sessionType<userType>, chatId: number) {
+      this.page++
       const message = await chatMessage({
         page: chatId,
         pageSize: 20,
         to_id: session.to_id,
       })
-      console.log(message)
+      if (this.total <= this.page * 20) {
+        this.isShowMoreBtn = false
+      } else {
+        this.isShowMoreBtn = true
+      }
       const isArray = message.list instanceof Array
       const chatRecord = {
-        list: isArray && this.chattingRecords
-          ? message.list.concat(this.chattingRecords.list)
-          :  message.list,
+        list:
+          isArray && this.chattingRecords
+            ? message.list.concat(this.chattingRecords.list)
+            : !isArray && this.chattingRecords
+            ? this.chattingRecords.list
+            : [],
         mate: message.mate || {},
         id: session.to_id,
         from_id: session.form_id,
@@ -157,14 +192,14 @@ export const sessionStore = defineStore('sessionStore', {
     // 发送和接收聊天记录
     changeChattingRecords(message: chatItemType) {
       this.changeSessionPoint(message)
-      if(!this.chattingRecords){
+      if (!this.chattingRecords) {
         // 无聊天记录时
         const chatRecord = {
           list: [message],
           mate: {
             page: 1,
             pageSize: 10,
-            total: 1
+            total: 1,
           },
           id: message.form_id,
           from_id: message.to_id,
@@ -201,18 +236,20 @@ export const sessionStore = defineStore('sessionStore', {
   getters: {
     // 判断是否展示聊天时间
     chattingRecordsList(state) {
-      if(!state.chattingRecords){
+      if (!state.chattingRecords) {
         return state.chattingRecords
       }
       const recordsList = JSON.parse(JSON.stringify(state.chattingRecords))
       recordsList.list = []
-      console.log(recordsList,state.chattingRecords);
-      if(!state.chattingRecords.list[0]){
+      if (!state.chattingRecords.list[0]) {
         return []
       }
       let timesStr = state.chattingRecords.list[0].created_at
       let time = new Date(timesStr).getTime()
-      state.chattingRecords.list.forEach((item) => {
+      state.chattingRecords.list.forEach((item, index) => {
+        if (index === 0) {
+          item.isShowTime = true
+        }
         const timeMs = new Date(item.created_at).getTime()
         if (timeMs - time > 120 * 1000) {
           item.isShowTime = true

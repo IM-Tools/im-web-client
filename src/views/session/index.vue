@@ -48,23 +48,25 @@ watch(scrollType, () => {
   onScrollMsg()
 })
 // 查看更多聊天记录
+const isShowMoreBtn = computed(() => store.isShowMoreBtn)
 const moreRecord = () => {
   isMore.value = true
-  if(!chattingRecordsList.value){
-
+  if (!chattingRecordsList.value) {
     return
   }
   const id = chattingRecordsList.value.list[0].id
-  store.moreRecord(selectSession.value, id)
+  if(selectSession.value){
+    store.moreRecord(selectSession.value, id)
+  }
 }
 
 // 发送聊天内容
 const sendContent = ref<string>()
 const sendMsg = (msgType: number = 1, message?: string) => {
-  if(!selectSession.value.id){
+  if (!selectSession.value) {
     ElMessage({
       type: 'warning',
-      message: '暂无聊天对象'
+      message: '暂无聊天对象',
     })
     return
   }
@@ -80,6 +82,9 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     channel_type: 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
+    if(!selectSession.value){
+      return
+    }
     // 聊天记录
     const chatMsg = {
       Users: {
@@ -132,10 +137,10 @@ function getChatPotinTime(time: string) {
 // 发送图片或文件
 const fileRef = ref<any>(null)
 function fileChange(file: any) {
-  if(!selectSession.value.id){
+  if (!selectSession.value) {
     ElMessage({
       type: 'warning',
-      message: '暂无聊天对象'
+      message: '暂无聊天对象',
     })
     return
   }
@@ -236,7 +241,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
               {{ item.last_message ? item.last_message.content : '开始聊天' }}
             </div>
           </div>
-          <div class="close" @click="handleRemoveSession(item)">
+          <div class="close" @click.stop="handleRemoveSession(item)">
             <el-icon><Close /></el-icon>
           </div>
         </li>
@@ -247,11 +252,13 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
           v-if="
-            chattingRecordsList && chattingRecordsList.list && chattingRecordsList.list.length > 0
+            chattingRecordsList &&
+            chattingRecordsList.list &&
+            chattingRecordsList.list.length > 0
           "
           ref="chatContent"
         >
-          <p><span @click="moreRecord">查看更多消息</span></p>
+          <p><span @click="moreRecord" v-if="isShowMoreBtn">查看更多消息</span></p>
           <li v-for="item in chattingRecordsList.list" :key="item.id">
             <p v-if="item.isShowTime">
               <span>{{ getChatPotinTime(item.created_at) }}</span>
@@ -302,7 +309,9 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         </ul>
         <ul
           v-show="
-            !chattingRecordsList || !chattingRecordsList.list || chattingRecordsList.list.length <= 0
+            !chattingRecordsList ||
+            !chattingRecordsList.list ||
+            chattingRecordsList.list.length <= 0
           "
         >
           <li class="none">暂无聊天</li>
@@ -518,6 +527,9 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       padding: 0px 10px 20px;
       box-sizing: border-box;
       overflow-y: auto;
+      ul{
+        padding: 15px 0 0;
+      }
       ul > p {
         width: 100%;
         font-size: 12px;

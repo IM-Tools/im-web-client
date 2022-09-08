@@ -47,6 +47,8 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         if(!event.data){
           return
         }
+        console.log(event.data);
+        
         const message = JSON.parse(event.data)
         switch (message.msg_code) {
           case 200:
