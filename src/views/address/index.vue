@@ -25,12 +25,12 @@ const closeAddFriend = () => {
 }
 const store = sessionStore()
 // 搜索内容
-const searchCnt = ref<string>()
+const searchCnt = ref<string>('')
 
 // 用户点击事件
 const userClick = (user: friendType<userType>) => {
-  console.log(user)
-
+  searchCnt.value = ''
+  cancleSearch()
   usersStore.setSelectName('userList')
   usersStore.setSelectUser(user)
   // userMessage.value = user
@@ -106,6 +106,29 @@ const menuLists = ref<menuType[]>([
     },
   },
 ])
+// 搜索
+const isSearch = ref(false)
+const queryUserList = computed( () => usersStore.queryUserList )
+function cancleSearch(){
+  if(searchCnt.value !== ''){
+    return
+  }
+  isSearch.value = false
+  usersStore.getQueryUserList('', true)
+}
+function clearSearch(){
+  isSearch.value = false
+  usersStore.getQueryUserList('', true)
+}
+function startSearch(){
+  isSearch.value = true
+}
+function searchClick(){
+  if(!searchCnt.value){
+    return
+  }
+  usersStore.getQueryUserList(searchCnt.value)
+}
 </script>
 
 <template>
@@ -117,11 +140,16 @@ const menuLists = ref<menuType[]>([
             v-model="searchCnt"
             class="w-50 m-2"
             placeholder="搜索"
+            @focus="startSearch"
+            @blur="cancleSearch"
+            @change="searchClick"
+            @clear="clearSearch"
             :prefix-icon="Search"
+            clearable
           />
         </div>
         <div class="add" @click="addBtnClick">
-          <el-icon><Plus /></el-icon>
+          <el-icon><svg-icon name="addUser" color="#eee" /></el-icon>
         </div>
       </div>
       <div class="list">
@@ -137,9 +165,27 @@ const menuLists = ref<menuType[]>([
             <p>新的朋友</p>
           </div>
         </div>
-        <ul>
+        <ul v-show="!isSearch">
           <li
             v-for="item in myFriendList"
+            :key="item.id"
+            :class="{
+              select: selectName !== 'newFriend' && userMessage?.id === item.id,
+            }"
+            @click="userClick(item)"
+            v-customMenu="{ menuLists, val: item }"
+          >
+            <div class="img">
+              <img :src="item.Users.avatar" alt="" />
+            </div>
+            <div class="user">
+              <div class="name">{{ item.Users.name }}</div>
+            </div>
+          </li>
+        </ul>
+        <ul v-show="isSearch">
+          <li
+            v-for="item in queryUserList"
             :key="item.id"
             :class="{
               select: selectName !== 'newFriend' && userMessage?.id === item.id,

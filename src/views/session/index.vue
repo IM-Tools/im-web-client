@@ -14,7 +14,7 @@ import { getFileType } from '@/utils/session'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
-const searchCnt = ref<string>()
+const searchCnt = ref<string>('')
 // 阻止input默认行为
 const handleKeyDown = (e: any) => {
   e.preventDefault()
@@ -34,6 +34,8 @@ const chattingRecordsList = computed(() => store.chattingRecordsList)
 // 会话点击事件
 const sessionClick = (session: sessionType<userType>) => {
   isMore.value = false
+  searchCnt.value = ''
+  cancleSearch()
   // 获取点击会话
   store.setSelectSession(session)
   // 获取聊天记录
@@ -201,6 +203,29 @@ function handleRemoveSession(session: sessionType<userType>) {
 const defaultTime = ref<string>('')
 const time = new Date()
 defaultTime.value = timestampChange(time, 'mm:ss')
+// 搜索
+const isSearch = ref(false)
+const querySessionList = computed( () => store.querySessionList )
+function cancleSearch(){
+  if(searchCnt.value !== ''){
+    return
+  }
+  isSearch.value = false
+  store.getQuerySessionList('', true)
+}
+function clearSearch(){
+  isSearch.value = false
+  store.getQuerySessionList('', true)
+}
+function startSearch(){
+  isSearch.value = true
+}
+function searchClick(){
+  if(!searchCnt.value){
+    return
+  }
+  store.getQuerySessionList(searchCnt.value)
+}
 </script>
 
 <template>
@@ -212,14 +237,19 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             v-model="searchCnt"
             class="w-50 m-2"
             placeholder="搜索"
+            @focus="startSearch"
+            @blur="cancleSearch"
+            @change="searchClick"
+            @clear="clearSearch"
             :prefix-icon="Search"
+            clearable
           />
         </div>
         <div class="add">
           <el-icon><Plus /></el-icon>
         </div>
       </div>
-      <ul>
+      <ul v-show="!isSearch">
         <li
           v-for="item in sessionList"
           :key="item.id"
@@ -232,8 +262,41 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           <div class="img">
             <img :src="item.avatar" alt="" />
             <!-- <span :class="{ online: item.top_status != 1 }"></span> -->
-            <span :class="{ point: item.last_message.isPoint }">
-              <i>{{ item.last_message.num == 0 ? '' :  item.last_message.num }}</i></span
+            <span :class="{ point: item.last_message?.isPoint }">
+              <i>{{ item.last_message?.num == 0 ? '' :  item.last_message?.num }}</i></span
+            >
+          </div>
+          <div class="user">
+            <div class="name">
+              {{ item.note || item.name }}
+              <div class="time">
+                {{ item.last_message ? item.last_message.time : defaultTime }}
+              </div>
+            </div>
+            <div class="message">
+              {{ item.last_message ? item.last_message.content : '开始聊天' }}
+            </div>
+          </div>
+          <div class="close" @click.stop="handleRemoveSession(item)">
+            <el-icon><Close /></el-icon>
+          </div>
+        </li>
+      </ul>
+      <ul v-show="isSearch">
+        <li
+          v-for="item in querySessionList"
+          :key="item.id"
+          @click="sessionClick(item)"
+          :class="{
+            select: item.id === selectSession?.id,
+            sessionTop: item.top_status == 1,
+          }"
+        >
+          <div class="img">
+            <img :src="item.avatar" alt="" />
+            <!-- <span :class="{ online: item.top_status != 1 }"></span> -->
+            <span :class="{ point: item.last_message?.isPoint }">
+              <i>{{ item.last_message?.num == 0 ? '' :  item.last_message?.num }}</i></span
             >
           </div>
           <div class="user">

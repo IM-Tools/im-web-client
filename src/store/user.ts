@@ -6,15 +6,26 @@ import { sessionStore } from './session'
 export const userStore = defineStore('user', {
   state: () => {
     const userList: friendType<userType>[] = getStorage('userList','object') || []
+    const queryUserList: friendType<userType>[] = []
     const selectUser: friendType<userType> | null = getStorage('selectUser','object') || {}
     const selectName: string = getStorage('selectName') || 'newFriend'
     return {
       userList,
       selectUser,
-      selectName
+      selectName,
+      queryUserList
     }
   },
   actions: {
+    getQueryUserList(search: string, clear?: boolean){
+      if(clear){
+        this.queryUserList = []
+        return
+      }
+      this.queryUserList = this.userList.filter( item => {
+        return item.Users.name.indexOf(search) !== -1 ||  (item.Users.email && item.Users.email.indexOf(search) !== -1)
+      })
+    },
     setUserList(){
       if(this.userList[0]){
         return new Promise(resolve => {
