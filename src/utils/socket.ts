@@ -35,7 +35,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         // 心跳
         setInterval(() => {
           send('{"msg_code": 1004,"message":"ping"}')
-        },10000)
+        }, 10000)
         console.log('onConnected', ws)
         wsObj = { ws, close, send }
         openBack && openBack()
@@ -44,15 +44,15 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         // 选中的会话
         const selectSession = computed(() => store.selectSession)
         // console.log('event', event)
-        if(!event.data){
+        if (!event.data) {
           return
         }
-        console.log(event.data);
-        
+        console.log(event.data)
+
         const message = JSON.parse(event.data)
         switch (message.msg_code) {
           case 200:
-            console.log('聊天消息', message)
+            console.log('聊天消息', message, selectSession.value)
             const time = new Date()
             const res = await getFriendDetails(message.form_id)
             const chatMsg = {
@@ -74,17 +74,10 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             }
             // 聊天记录
             const result = store.changeChattingRecords(chatMsg)
-            result.then( () => {
+            result.then(() => {
               store.startScroll()
             })
-            // 会话列表记录
-            const sessionMsg = Object.assign(selectSession.value, {
-              last_message: {
-                content: message.message,
-                time: timestampChange(time, 'HH:mm'),
-              },
-            })
-            store.changeSessionList(sessionMsg, 'send')
+
             break
           case 1000:
             console.log('添加好友请求', message)

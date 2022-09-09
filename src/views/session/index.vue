@@ -55,7 +55,7 @@ const moreRecord = () => {
     return
   }
   const id = chattingRecordsList.value.list[0].id
-  if(selectSession.value){
+  if (selectSession.value) {
     store.moreRecord(selectSession.value, id)
   }
 }
@@ -82,7 +82,7 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     channel_type: 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
-    if(!selectSession.value){
+    if (!selectSession.value) {
       return
     }
     // 聊天记录
@@ -193,7 +193,10 @@ function onScrollMsg() {
 }
 // 移除会话
 function handleRemoveSession(session: sessionType<userType>) {
-  store.changeSessionList(session, 'delete')
+  const result = store.changeSessionList(session, 'delete')
+  result.then(() => {
+    onScrollMsg()
+  })
 }
 const defaultTime = ref<string>('')
 const time = new Date()
@@ -228,7 +231,10 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         >
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <span :class="{ online: item.top_status == 1 }"></span>
+            <!-- <span :class="{ online: item.top_status != 1 }"></span> -->
+            <span :class="{ point: item.last_message.isPoint }">
+              <i>{{ item.last_message.num == 0 ? '' :  item.last_message.num }}</i></span
+            >
           </div>
           <div class="user">
             <div class="name">
@@ -258,7 +264,9 @@ defaultTime.value = timestampChange(time, 'mm:ss')
           "
           ref="chatContent"
         >
-          <p><span @click="moreRecord" v-if="isShowMoreBtn">查看更多消息</span></p>
+          <p>
+            <span @click="moreRecord" v-if="isShowMoreBtn">查看更多消息</span>
+          </p>
           <li v-for="item in chattingRecordsList.list" :key="item.id">
             <p v-if="item.isShowTime">
               <span>{{ getChatPotinTime(item.created_at) }}</span>
@@ -420,7 +428,6 @@ defaultTime.value = timestampChange(time, 'mm:ss')
         .img {
           width: 50px;
           height: 50px;
-          overflow: hidden;
           background-color: #e3e4e6;
           border-radius: 5px;
           position: relative;
@@ -435,11 +442,31 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             display: block;
             position: absolute;
             text-align: center;
-            border-radius: 90px;
+            border-radius: 50%;
             border: solid 2px #fff;
             bottom: 0px;
             right: 0px;
-            background-color: #3bd821 !important;
+            background-color: #3bd821;
+          }
+          .point {
+            width: 16px;
+            height: 16px;
+            display: block;
+            position: absolute;
+            text-align: center;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 12px;
+            top: -3px;
+            right: -5px;
+            background-color: #ff1100;
+            line-height: 16px;
+            text-align: center;
+            i {
+              display: inline-block;
+              font-style: normal;
+              transform: scale(0.8);
+            }
           }
           .offline {
             width: 10px;
@@ -451,7 +478,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
             border: solid 2px #fff;
             bottom: 0px;
             right: 0px;
-            background-color: #ccced1 !important;
+            background-color: #ccced1;
           }
         }
         .user {
@@ -527,7 +554,7 @@ defaultTime.value = timestampChange(time, 'mm:ss')
       padding: 0px 10px 20px;
       box-sizing: border-box;
       overflow-y: auto;
-      ul{
+      ul {
         padding: 15px 0 0;
       }
       ul > p {

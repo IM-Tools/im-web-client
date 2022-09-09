@@ -79,8 +79,11 @@ const friendRequestClick = (id: number, num: number) => {
 // 创建会话
 const cleartSession = () => {
   console.log('创建会话')
+  if(!userMessage.value){
+    return
+  }
   createSession({
-    id: userMessage.value?.Users.id || -1,
+    id: userMessage.value.Users.id,
     type: 1,
   }).then((res) => {
     console.log(res)

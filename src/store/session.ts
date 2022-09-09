@@ -7,6 +7,8 @@ import type { chatRecordType, chatItemType } from '@/api/chat/type'
 import router from '@/router'
 import { getStorage, setStorage } from '@/utils/storage'
 import { getPointMsg } from '@/utils/session'
+import { mainStore } from './index'
+
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
     const scrollType: boolean = true
@@ -52,10 +54,11 @@ export const sessionStore = defineStore('sessionStore', {
         item.last_message = option
         return item
       })
-      // if (!this.selectSession) {
-      //   this.selectSession = this.sessionList[0]
-      //   this.setChattingRecords(this.selectSession)
-      // }
+      if (!this.selectSession) {
+        this.selectSession = this.sessionList[0]
+        setStorage('selectSession', this.selectSession)
+        this.setChattingRecords(this.selectSession)
+      }
     },
     // 改变会话列表
     changeSessionList(session: sessionType<userType>, type: string) {
@@ -86,27 +89,59 @@ export const sessionStore = defineStore('sessionStore', {
             this.sessionList.splice(idx, 1)
             setStorage('sessionList', this.sessionList)
             // 判断是否是选中的会话
-            console.log('判断是否是选中的会话',this.selectSession, session.id);
-            
+            console.log('判断是否是选中的会话', this.selectSession, session.id)
+
             if (this.selectSession && this.selectSession.id === session.id) {
+              if (this.sessionList[0]) {
+                this.selectSession = this.sessionList[0]
+                setStorage('selectSession', this.selectSession)
+                return this.setChattingRecords(this.selectSession)
+              }
               this.selectSession = null
               setStorage('selectSession', '')
               // 删除对应聊天记录
               this.chattingRecords = null
               setStorage('chattingRecords', '')
+              return new Promise((resolve) => {
+                resolve(true)
+              })
             }
           })
         }
       }
+      return new Promise((resolve) => {
+        resolve(true)
+      })
     },
     // 改变提示消息
-    changeSessionPoint(message: chatItemType) {
+    async changeSessionPoint(message: chatItemType) {
       const idx: number = this.sessionList.findIndex((item) => {
-        return item.to_id === message.to_id
+        const userStore = mainStore()
+        const res = item.to_id === message.to_id && item.form_id === userStore.userInfo.id
+        return res || (item.to_id === message.form_id && item.form_id === message.to_id)
       })
       // 有会话记录
       if (idx >= 0) {
         const time = new Date(message.created_at)
+        if(this.sessionList[idx].to_id === message.form_id && this.sessionList[idx].form_id === message.to_id){
+          // 判断是不是选中的会话
+          if(!this.selectSession || this.sessionList[idx].id !== this.selectSession.id){
+            const { isPoint, num} = this.sessionList[idx].last_message
+            let number = 1
+            if(isPoint && num){
+              number = num + 1
+            }
+            const lastMessage = {
+              content: getPointMsg(message.msg_type, message.msg),
+              time: timestampChange(time, 'HH:mm'),
+              isPoint: true,
+              num: number
+            }
+            this.sessionList[idx].last_message = lastMessage
+            setStorage('sessionList', this.sessionList)
+            return
+          }
+        }
         const lastMessage = {
           content: getPointMsg(message.msg_type, message.msg),
           time: timestampChange(time, 'HH:mm'),
@@ -115,26 +150,39 @@ export const sessionStore = defineStore('sessionStore', {
         setStorage('sessionList', this.sessionList)
       } else {
         // 没有会话记录则创建会话
-        createSession({
-          id: message.form_id || -1,
+        const result = await createSession({
+          id: message.form_id,
           type: 1,
-        }).then((res) => {
-          console.log(res)
-          const time = new Date(message.created_at)
-          const session = Object.assign(res, {
+        })
+        const time = new Date(message.created_at)
+          const session = Object.assign(result, {
             last_message: {
               content: getPointMsg(message.msg_type, message.msg),
               time: timestampChange(time, 'HH:mm'),
+              isPoint: true,
+              num: 1
             },
           })
           this.changeSessionList(session, 'add')
-        })
       }
     },
     // 设置选中会话
     setSelectSession(session: sessionType<userType>) {
       this.selectSession = session
       setStorage('selectSession', this.selectSession)
+      // 清除选中会话提示
+      const idx: number = this.sessionList.findIndex((item) => {
+        return item.id === session.id
+      })
+      const { content, time} = this.sessionList[idx].last_message
+        const lastMessage = {
+          content: content,
+          time: time,
+          isPoint: false,
+          num: 0
+        }
+      this.sessionList[idx].last_message = lastMessage
+      setStorage('sessionList', this.sessionList)
     },
     // 获取聊天记录
     async setChattingRecords(session: sessionType<userType>) {
@@ -191,32 +239,26 @@ export const sessionStore = defineStore('sessionStore', {
     },
     // 发送和接收聊天记录
     changeChattingRecords(message: chatItemType) {
-      this.changeSessionPoint(message)
-      if (!this.chattingRecords) {
-        // 无聊天记录时
-        const chatRecord = {
-          list: [message],
-          mate: {
-            page: 1,
-            pageSize: 10,
-            total: 1,
-          },
-          id: message.form_id,
-          from_id: message.to_id,
+      if(this.selectSession && this.chattingRecords){
+        const userStore = mainStore()
+        // 接收消息
+        if (
+          message.form_id === this.selectSession.to_id &&
+          message.to_id === this.selectSession.form_id
+        ) {
+          this.chattingRecords.list.push(message)
+          setStorage('chattingRecords', this.chattingRecords)
         }
-        this.chattingRecords = chatRecord
-        setStorage('chattingRecords', this.chattingRecords)
-        return new Promise((resolve) => {
-          resolve(true)
-        })
+        // 发送消息
+        if (
+          message.form_id === userStore.userInfo.id &&
+          message.to_id === this.selectSession.to_id
+        ) {
+          this.chattingRecords.list.push(message)
+          setStorage('chattingRecords', this.chattingRecords)
+        }
       }
-      if (
-        message.form_id === this.chattingRecords.id ||
-        message.form_id === this.chattingRecords.from_id
-      ) {
-        this.chattingRecords.list.push(message)
-        setStorage('chattingRecords', this.chattingRecords)
-      }
+      this.changeSessionPoint(message)
       return new Promise((resolve) => {
         resolve(true)
       })

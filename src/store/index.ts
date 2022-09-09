@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { getStorage, setStorage,removeStorage  } from '@/utils/storage'
 export { sessionStore } from './session'
 export { userStore} from './user'
+import { closeWs } from '@/utils/socket'
 export const mainStore = defineStore('main', {
   state: () => {
     return {
@@ -36,6 +37,7 @@ export const mainStore = defineStore('main', {
       this.userInfo = data
     },
     logOut(){
+      closeWs()
       this.token = ''
       this.userInfo = {}
       removeStorage('token')

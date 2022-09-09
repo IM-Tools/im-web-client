@@ -29,6 +29,8 @@ export interface sessionType<T> {
   value?: any,
   last_message: {
     content: string,
-    time: string
+    time: string,
+    isPoint?: boolean,
+    num?: number
   }
 }
