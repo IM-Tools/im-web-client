@@ -35,6 +35,7 @@ const chattingRecordsList = computed(() => store.chattingRecordsList)
 const sessionClick = (session: sessionType<userType>) => {
   isMore.value = false
   searchCnt.value = ''
+  sendContent.value = ''
   cancleSearch()
   // 获取点击会话
   store.setSelectSession(session)
