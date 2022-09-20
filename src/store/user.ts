@@ -66,7 +66,7 @@ export const userStore = defineStore('user', {
         }
         if(this.selectUser && user.id === this.selectUser.id){
           this.selectUser = null
-        setStorage('selectUser', '')
+          setStorage('selectUser', '')
         }
         deleteFriend(user.Users.id).then( () => {
           console.log('删除成功');

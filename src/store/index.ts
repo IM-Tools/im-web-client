@@ -20,13 +20,21 @@ export const mainStore = defineStore('main', {
       ],
       themeSelect: getStorage('theme') || 'light',
       token: getStorage('token') || '',
-      userInfo: getStorage('userInfo', 'object') || {}
+      userInfo: getStorage('userInfo', 'object') || {},
+      pointType: getStorage('pointType', 'object') || {
+        session: false,
+        address: false
+      }
     }
   },
   actions: {
     setTheme(theme: string) {
       setStorage('theme', theme)
       this.themeSelect = theme
+    },
+    changPoint(key: string, type: boolean){
+      this.pointType[key] = type
+      setStorage('pointType', this.pointType)
     },
     setToken(token: string) {
       setStorage('token', token)
@@ -43,6 +51,7 @@ export const mainStore = defineStore('main', {
       removeStorage('token')
       removeStorage('userInfo')
       removeStorage('sessionList')
+      removeStorage('userList')
       removeStorage('selectSession')
       removeStorage('chattingRecords')
     }

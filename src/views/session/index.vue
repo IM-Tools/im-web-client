@@ -318,7 +318,9 @@ function searchClick(){
       </ul>
     </div>
     <div class="session-cnt">
-      <div class="chat-top"></div>
+      <div class="chat-top">
+        {{selectSession?.name}}
+      </div>
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
           v-if="
@@ -611,6 +613,8 @@ function searchClick(){
       width: 100%;
       border-bottom: 1px solid #e8eaec;
       box-sizing: border-box;
+      line-height: 50px;
+      text-align: center;
     }
     & > .chat-msg-warp {
       width: 100%;

@@ -121,6 +121,18 @@ export const sessionStore = defineStore('sessionStore', {
           })
         }
       }
+      if(type === 'agree'){
+        let isAdd: boolean = false
+        this.sessionList.forEach((item) => {
+          if (item.id === session.id) {
+            isAdd = true
+          }
+        })
+        if (!isAdd) {
+          this.sessionList.push(session)
+          setStorage('sessionList', this.sessionList)
+        }
+      }
       return new Promise((resolve) => {
         resolve(true)
       })
