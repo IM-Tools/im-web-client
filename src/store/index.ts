@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { getStorage, setStorage,removeStorage  } from '@/utils/storage'
-export { sessionStore } from './session'
-export { userStore} from './user'
+import { sessionStore } from './session'
+export { sessionStore }
+import { userStore} from './user'
+export { userStore}
 import { closeWs } from '@/utils/socket'
 export const mainStore = defineStore('main', {
   state: () => {
@@ -50,10 +52,10 @@ export const mainStore = defineStore('main', {
       this.userInfo = {}
       removeStorage('token')
       removeStorage('userInfo')
-      removeStorage('sessionList')
-      removeStorage('userList')
-      removeStorage('selectSession')
-      removeStorage('chattingRecords')
+      const sessionStores = sessionStore()
+      sessionStores.init()
+      const userStores = userStore()
+      userStores.init()
     }
   },
 })

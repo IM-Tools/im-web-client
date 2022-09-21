@@ -5,7 +5,7 @@ import { timestampChange } from '@/utils'
 import type { userType, sessionType } from '@/api/session/type'
 import type { chatRecordType, chatItemType } from '@/api/chat/type'
 import router from '@/router'
-import { getStorage, setStorage } from '@/utils/storage'
+import { getStorage, setStorage,removeStorage } from '@/utils/storage'
 import { getPointMsg } from '@/utils/session'
 import { mainStore } from './index'
 
@@ -309,6 +309,14 @@ export const sessionStore = defineStore('sessionStore', {
       // 移除对应会话
       this.changeSessionList(session[0], 'delete')
     },
+    init(){
+      this.sessionList = []
+      this.selectSession = null
+      this.chattingRecords = null
+      removeStorage('sessionList')
+      removeStorage('selectSession')
+      removeStorage('chattingRecords')
+    }
   },
   getters: {
     // 判断是否展示聊天时间
