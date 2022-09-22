@@ -271,6 +271,7 @@ export const sessionStore = defineStore('sessionStore', {
       }
       this.chattingRecords = chatRecord
       setStorage('chattingRecords', this.chattingRecords)
+      return true
     },
     // 发送和接收聊天记录
     changeChattingRecords(message: chatItemType) {

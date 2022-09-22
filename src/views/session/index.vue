@@ -11,6 +11,7 @@ import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
 import { getFileType } from '@/utils/session'
+import Voice from '@/components/Voice.vue'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -52,14 +53,19 @@ watch(scrollType, () => {
 })
 // 查看更多聊天记录
 const isShowMoreBtn = computed(() => store.isShowMoreBtn)
+const isShowLoading = ref<boolean>(false)
 const moreRecord = () => {
   isMore.value = true
   if (!chattingRecordsList.value) {
     return
   }
+  isShowLoading.value = true
   const id = chattingRecordsList.value.list[0].id
   if (selectSession.value) {
-    store.moreRecord(selectSession.value, id)
+    const res = store.moreRecord(selectSession.value, id)
+    res.then(() => {
+      isShowLoading.value = false
+    })
   }
 }
 
@@ -163,6 +169,11 @@ function onSelectEmoji(emo: string) {
   isShowEmoji.value = false
   textarea.value && textarea.value.focus()
 }
+// 语音
+const isShowVoice = ref<boolean>(false)
+function sendVoiceMsg(url: string){
+  sendMsg(2, url)
+}
 onMounted(() => {
   onScrollMsg()
   textarea.value && textarea.value.focus()
@@ -206,23 +217,23 @@ const time = new Date()
 defaultTime.value = timestampChange(time, 'mm:ss')
 // 搜索
 const isSearch = ref(false)
-const querySessionList = computed( () => store.querySessionList )
-function cancleSearch(){
-  if(searchCnt.value !== ''){
+const querySessionList = computed(() => store.querySessionList)
+function cancleSearch() {
+  if (searchCnt.value !== '') {
     return
   }
   isSearch.value = false
   store.getQuerySessionList('', true)
 }
-function clearSearch(){
+function clearSearch() {
   isSearch.value = false
   store.getQuerySessionList('', true)
 }
-function startSearch(){
+function startSearch() {
   isSearch.value = true
 }
-function searchClick(){
-  if(!searchCnt.value){
+function searchClick() {
+  if (!searchCnt.value) {
     return
   }
   store.getQuerySessionList(searchCnt.value)
@@ -264,7 +275,9 @@ function searchClick(){
             <img :src="item.avatar" alt="" />
             <!-- <span :class="{ online: item.top_status != 1 }"></span> -->
             <span :class="{ point: item.last_message?.isPoint }">
-              <i>{{ item.last_message?.num == 0 ? '' :  item.last_message?.num }}</i></span
+              <i>{{
+                item.last_message?.num == 0 ? '' : item.last_message?.num
+              }}</i></span
             >
           </div>
           <div class="user">
@@ -297,7 +310,9 @@ function searchClick(){
             <img :src="item.avatar" alt="" />
             <!-- <span :class="{ online: item.top_status != 1 }"></span> -->
             <span :class="{ point: item.last_message?.isPoint }">
-              <i>{{ item.last_message?.num == 0 ? '' :  item.last_message?.num }}</i></span
+              <i>{{
+                item.last_message?.num == 0 ? '' : item.last_message?.num
+              }}</i></span
             >
           </div>
           <div class="user">
@@ -319,7 +334,7 @@ function searchClick(){
     </div>
     <div class="session-cnt">
       <div class="chat-top">
-        {{selectSession?.name}}
+        {{ selectSession?.name }}
       </div>
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
@@ -330,8 +345,11 @@ function searchClick(){
           "
           ref="chatContent"
         >
-          <p>
-            <span @click="moreRecord" v-if="isShowMoreBtn">查看更多消息</span>
+          <p v-show="isShowMoreBtn || isShowLoading">
+            <span @click="moreRecord" v-if="isShowMoreBtn && !isShowLoading"
+              >查看更多消息</span
+            >
+            <span class="loading spin" v-if="isShowLoading">加载中</span>
           </p>
           <li v-for="item in chattingRecordsList.list" :key="item.id">
             <p v-if="item.isShowTime">
@@ -354,13 +372,23 @@ function searchClick(){
                 <div class="chat-cnt" v-if="item.msg_type === 1">
                   {{ item.msg }}
                 </div>
+                <div class="voice" v-if="item.msg_type === 2">
+                  <audio :src="item.msg" controls></audio>
+                </div>
                 <div
                   class="chat-img"
                   v-if="
                     item.msg_type === 3 && getFileType(item.msg)[0] === 'image'
                   "
                 >
-                  <img :src="item.msg" alt="" @load="onScrollMsg" />
+                  <!-- <img :src="item.msg" alt="" @load="onScrollMsg" /> -->
+                  <el-image
+                    :src="item.msg"
+                    :preview-src-list="[item.msg]"
+                    :initial-index="4"
+                    @load="onScrollMsg"
+                    fit="cover"
+                  />
                 </div>
                 <div
                   class="chat-file"
@@ -418,6 +446,9 @@ function searchClick(){
             <li @click="isShowEmoji = !isShowEmoji">
               <svg-icon name="smile" color="#666" />
             </li>
+            <li @click="isShowVoice = true">
+              <svg-icon name="audio" color="#666" />
+            </li>
           </ul>
         </div>
         <div class="chat-content">
@@ -436,6 +467,9 @@ function searchClick(){
         </div>
       </div>
     </div>
+  </div>
+  <div class="voice" v-if="isShowVoice">
+    <Voice @closeVoice="isShowVoice = false" @sendVoice=sendVoiceMsg></Voice>
   </div>
 </template>
 
@@ -629,13 +663,30 @@ function searchClick(){
         width: 100%;
         font-size: 12px;
         text-align: center;
-        line-height: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         span {
           color: #6084e7;
           cursor: pointer;
           &:hover {
             color: #2a57d3;
           }
+        }
+        .loading {
+          display: inline-block;
+          width: 3px;
+          height: 3px;
+          border-radius: 100%; /* 圆角 */
+          text-indent: -9999px;
+          box-shadow: 0 -7px 0 1px #333, /* 上, 1px 扩展 */ 
+                      7px 0px #333,/* 右 */ 
+                      0 7px #333, /* 下 */ 
+                      -7px 0 #333,/* 左 */ 
+                      -5px -5px 0 0.5px #333,/* 左上, 0.5px扩展 */ 
+                      5px -5px 0 1.5px #333,/* 右上, 1.5px扩展 */ 
+                      5px 5px #333, /* 右下 */ -5px 5px #333;
         }
       }
       li {
@@ -864,5 +915,12 @@ function searchClick(){
       }
     }
   }
+}
+.spin {
+    animation: spin 1s steps(8) infinite;
+}
+@keyframes spin {
+    from {transform: rotate(0deg);}
+      to {transform: rotate(360deg);}
 }
 </style>
