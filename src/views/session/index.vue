@@ -12,6 +12,7 @@ import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
 import { getFileType } from '@/utils/session'
 import Voice from '@/components/Voice.vue'
+import AddGroup from '@/components/AddGroup.vue'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -20,6 +21,14 @@ const searchCnt = ref<string>('')
 const handleKeyDown = (e: any) => {
   e.preventDefault()
   sendMsg()
+}
+// 是否创建群聊
+const isAddGroup = ref(false)
+const addBtnClick = () => {
+  isAddGroup.value = true
+}
+const closeAddGroup = () => {
+  isAddGroup.value = false
 }
 // 用户信息
 const userInfo = baseStore.userInfo
@@ -257,7 +266,7 @@ function searchClick() {
             clearable
           />
         </div>
-        <div class="add">
+        <div class="add" @click="addBtnClick">
           <el-icon><Plus /></el-icon>
         </div>
       </div>
@@ -471,6 +480,10 @@ function searchClick() {
   <div class="voice" v-if="isShowVoice">
     <Voice @closeVoice="isShowVoice = false" @sendVoice=sendVoiceMsg></Voice>
   </div>
+  <div class="add-group-box" v-if="isAddGroup">
+    <AddGroup @closeAddGroup="closeAddGroup"></AddGroup>
+  </div>
+  <div class="mask" v-if="isAddGroup"></div>
 </template>
 
 <style scoped lang="less">
@@ -918,6 +931,26 @@ function searchClick() {
 }
 .spin {
     animation: spin 1s steps(8) infinite;
+}
+.add-group-box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 @keyframes spin {
     from {transform: rotate(0deg);}
