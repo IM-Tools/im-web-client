@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { Close, Search } from '@element-plus/icons-vue'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, reactive, watch } from 'vue'
 import { friendList } from '@/api/friend'
 import { computed } from '@vue/reactivity'
+import { createGroup } from '@/api/group'
+import { drawAvatar } from '@/utils/index'
+import { mainStore,sessionStore } from '@/store'
+import { uploadFile } from '@/api/chat'
+import { createSession } from '@/api/session'
 // 关闭添加窗口
 const emit = defineEmits(['closeAddGroup'])
 const closeAddGroup = () => {
@@ -10,9 +15,6 @@ const closeAddGroup = () => {
 }
 // 搜索用户名
 const searchName = ref('')
-function checkboxChange() {
-  console.log(userList.value)
-}
 // 获得用户列表
 const userList = ref()
 function getUserList() {
@@ -33,11 +35,87 @@ const selectUser = computed(() => {
     return item.checkType
   })
 })
+function removeUser(id: number){
+  userList.value.map( (user: any) => {
+    if(user.id === id){
+      user.checkType = false
+    }
+  })
+}
+// 监听用户选择，生成头像
+// 获取用户信息
+const store = mainStore()
+const userInfo = computed(() => store.userInfo)
+const userAvatar = ref('')
+const blobFile = ref()
+function getImgUrl(url: string, blob: any){
+  blobFile.value = blob
+  console.log(blobFile.value);
+  
+  userAvatar.value = url
+}
+watch(() => selectUser.value, () => {
+  const avatarList: string[] = selectUser.value.map((item: any) => {
+    return item.Users.avatar
+  })
+  drawAvatar([...avatarList, userInfo.value.avatar], getImgUrl)
+})
 onMounted(() => {
   getUserList()
 })
 // 创建
-const password = ref('')
+const themeList = ref<string[]>([
+  '电影',
+  '程序人生',
+  '读书',
+  '游戏',
+  '运动',
+  '地区交友',
+  '社团',
+  '朋友家人',
+  '圈子',
+])
+const selectTheme = ref<string[]>([])
+const createInfo = reactive({
+  name: '',
+  info: '',
+  avatar: '',
+  password: '',
+  is_pwd: 0,
+  theme: '',
+  select_user: '',
+})
+function selectThemeClick(theme: string) {
+  if (selectTheme.value.indexOf(theme) !== -1) {
+    const idx = selectTheme.value.indexOf(theme)
+    selectTheme.value.splice(idx, 1)
+    return
+  }
+  selectTheme.value.push(theme)
+}
+const mySessionStore = sessionStore()
+const confirmAddGroup = async () => {
+  const fileOfBlob = new File([blobFile.value], new Date().getTime() + '.png')
+  const res = await uploadFile({ file: fileOfBlob})
+  createInfo.avatar = res.file_url
+  createInfo.is_pwd = !createInfo.password ? 0 : 1
+  createInfo.theme = selectTheme.value.toString()
+  const ids = selectUser.value.map((item: any) => {
+    return item.id
+  })
+  createInfo.select_user = ids.toString()
+  createGroup(createInfo).then((res: any) => {
+    console.log(res)
+    createSession({
+      id: res.id,
+      type: 2,
+    }).then((res) => {
+      console.log(res)
+      mySessionStore.changeSessionList(res, 'add')
+      emit('closeAddGroup')
+    })
+  })
+}
 </script>
 
 <template>
@@ -63,11 +141,7 @@ const password = ref('')
               <div class="name">{{ user.Users.name }}</div>
             </div>
             <div class="select">
-              <el-checkbox
-                v-model="user.checkType"
-                @change="checkboxChange"
-                size="large"
-              />
+              <el-checkbox v-model="user.checkType" size="large" />
             </div>
           </li>
         </ul>
@@ -83,29 +157,86 @@ const password = ref('')
           }}
         </p>
       </div>
-      <div class="select-users">
-        <ul>
-          <li v-for="user in selectUser" :key="user.id">
-            <div class="user">
-              <div class="avatar">
-                <img :src="user.Users.avatar" alt="" />
+      <div class="cnt">
+        <div class="select-users">
+          <ul>
+            <li v-for="user in selectUser" :key="user.id">
+              <div class="user">
+                <div class="avatar">
+                  <img :src="user.Users.avatar" alt="" />
+                </div>
+                <div class="name">{{ user.Users.name }}</div>
               </div>
-              <div class="name">{{ user.Users.name }}</div>
+              <div class="remove" @click="removeUser(user.id)">
+                <el-icon><Close /></el-icon>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="message">
+          <div class="option">
+            <div class="label">群头像：</div>
+            <div class="input">
+              <div class="img" v-show="userAvatar">
+                <img :src="userAvatar" alt="" />
+              </div>
             </div>
-            <div class="close"></div>
-          </li>
-        </ul>
-      </div>
-      <div class="tool">
-        <div class="password">
-          <div class="label">密码：</div>
-          <div class="input">
-            <el-input v-model="password" placeholder="加入群聊是否需要密码，选填" type="password" />
+          </div>
+          <div class="option">
+            <div class="label">群名称：</div>
+            <div class="input">
+              <el-input v-model="createInfo.name" placeholder="请输入群名称" />
+            </div>
+          </div>
+          <div class="option">
+            <div class="label">描述：</div>
+            <div class="input">
+              <el-input
+                v-model="createInfo.info"
+                type="textarea"
+                placeholder="请输入群描述"
+                :rows="5"
+              />
+            </div>
+          </div>
+          <div class="option">
+            <div class="label">标签：</div>
+            <div class="input">
+              <ul>
+                <li
+                  v-for="(item, index) in themeList"
+                  @click="selectThemeClick(item)"
+                  :class="{ active: selectTheme.indexOf(item) !== -1 }"
+                  :key="index"
+                >
+                  {{ item }}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="option">
+            <div class="label">群密码：</div>
+            <div class="input">
+              <el-input
+                v-model="createInfo.password"
+                placeholder="加入群聊密码，选填"
+                type="password"
+              />
+            </div>
           </div>
         </div>
+      </div>
+      <div class="tool">
         <div class="btn">
-          <el-button type="primary">确认</el-button>
-          <el-button type="primary" plain @click="closeAddGroup">取消</el-button>
+          <el-button
+            type="primary"
+            :disabled="selectUser.length <= 0"
+            @click="confirmAddGroup"
+            >创建</el-button
+          >
+          <el-button type="primary" plain @click="closeAddGroup"
+            >取消</el-button
+          >
         </div>
       </div>
     </div>
@@ -124,15 +255,15 @@ const password = ref('')
   justify-content: space-between;
   padding: 10px 0px;
   .close {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     text-align: center;
-    line-height: 35px;
+    line-height: 30px;
     font-size: 20px;
     position: absolute;
     top: 5px;
     right: 5px;
-    z-index: 99;
+    z-index: 9999;
     cursor: pointer;
     &:hover {
       color: #eb1f1f;
@@ -143,6 +274,7 @@ const password = ref('')
     overflow: hidden;
     box-sizing: border-box;
     padding: 5px 0;
+    border-right: 1px solid #eee;
     .search {
       width: 100%;
       height: 40px;
@@ -212,8 +344,14 @@ const password = ref('')
       align-items: center;
       margin-bottom: 10px;
     }
+    .cnt {
+      width: 100%;
+      display: flex;
+      height: calc(100% - 85px);
+    }
     .select-users {
-      height: calc(100% - 125px);
+      height: 100%;
+      width: 280px;
       overflow-y: auto;
       ul {
         width: 100%;
@@ -250,25 +388,76 @@ const password = ref('')
               border: 1px solid #eee;
             }
           }
+          .remove{
+            width: 20px;
+            height: 20px;
+            background-color: #dfdfdf;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            &:hover{
+              background-color: #d4d4d4;
+            }
+          }
+        }
+      }
+    }
+    .message {
+      flex: 1;
+      width: 100%;
+      border-left: 1px solid #eee;
+      box-sizing: border-box;
+      padding-left: 10px;
+      .option {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        color: #333;
+        margin-bottom: 10px;
+        .label {
+          width: 60px;
+          font-size: 14px;
+          line-height: 30px;
+        }
+        .input {
+          flex: 1;
+          font-size: 14px;
+          ul {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            li {
+              margin: 5px;
+              padding: 3px 5px;
+              border-radius: 3px;
+              border: 1px solid #76c1ff;
+              color: #76c1ff;
+              cursor: pointer;
+            }
+            .active {
+              background-color: #76c1ff;
+              color: #fff;
+            }
+          }
+          .img{
+            width: 60px;
+            height: 60px;
+            padding: 3px;
+            box-sizing: border-box;
+            background-color: #e3e4e6;
+            img{
+              width: 100%;
+            }
+          }
         }
       }
     }
     .tool {
       width: 100%;
-      height: 80px;
-      .password {
-        width: 100%;
-        height: 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        .label{
-          width: 60px;
-        }
-        .input{
-          flex: 1;
-        }
-      }
+      height: 40px;
+
       .btn {
         width: 100%;
         height: 40px;

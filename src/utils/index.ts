@@ -75,3 +75,37 @@ export function timestampChange(timestamp: any, format?: string): string {
   dateStr = dateStr.replace(/W|w|week/, week)
   return dateStr
 }
+// 画头像
+export function drawAvatar(imgList: string[], callBack: Function){
+  const canvas = document.createElement("canvas")
+  const context = canvas.getContext("2d")
+  const sub = imgList.length
+  let step = 3
+  if(sub <= 4){
+    canvas.width = 100
+    canvas.height = 100
+    step = 2
+  } else{
+    canvas.width = 150
+    canvas.height = 150
+  }
+  let num = 0
+  imgList.forEach( (imgUrl,index) => {
+    const img = new Image()
+    img.src = imgUrl
+    img.width = 50
+    img.height = 50
+    img.setAttribute('crossOrigin', 'anonymous')
+    img.onload = () => {
+      num++
+      context && context.drawImage(img, 50*(index%step), 50*(parseInt(index/step + '')), 50, 50)
+      if(num === sub){
+        const url = canvas.toDataURL('image/png')
+        // callBack(url)
+        canvas.toBlob((blob) => {
+          callBack(url, blob)
+        })
+      }
+    }
+  })
+}
