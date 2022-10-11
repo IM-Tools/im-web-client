@@ -27,7 +27,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
     import.meta.env.VITE_APP_WS_API + getStorage('token'),
     {
       autoReconnect: {
-        retries: 3,
+        retries: -1,
         delay: 1500,
         onFailed() {
           console.log('websocket重连失败')
@@ -73,6 +73,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
               msg: message.message,
               msg_type: message.msg_type,
               to_id: message.to_id,
+              channel_type: message.channel_type,
               status: 1,
             }
             // 聊天记录

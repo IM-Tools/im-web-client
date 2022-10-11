@@ -92,12 +92,13 @@ const sendMsg = (msgType: number = 1, message?: string) => {
   if (!sendContent.value && msgType === 1) {
     return
   }
+  console.log(selectSession.value)
   const time = new Date()
   sendChatMessage({
     msg_client_id: time.getTime(),
     msg_type: msgType,
-    to_id: selectSession.value?.to_id,
-    channel_type: 1,
+    to_id: selectSession.value.channel_type===1 ? selectSession.value?.to_id : selectSession.value?.group_id,
+    channel_type:  selectSession.value.channel_type,
     message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
     if (!selectSession.value) {
