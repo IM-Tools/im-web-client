@@ -2,20 +2,20 @@ import { defineStore } from 'pinia'
 import { sessionList, removeSession, createSession } from '@/api/session'
 import { chatMessage } from '@/api/chat'
 import { timestampChange } from '@/utils'
-import type { userType, sessionType } from '@/api/session/type'
+import type { userType, sessionType, groupType } from '@/api/session/type'
 import type { chatRecordType, chatItemType } from '@/api/chat/type'
 import router from '@/router'
-import { getStorage, setStorage,removeStorage } from '@/utils/storage'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { getPointMsg } from '@/utils/session'
 import { mainStore } from './index'
 
 export const sessionStore = defineStore('sessionStore', {
   state: () => {
     const scrollType: boolean = true
-    const sessionList: sessionType<userType>[] =
+    const sessionList: sessionType<userType, groupType>[] =
       getStorage('sessionList', 'object') || []
-    const querySessionList: sessionType<userType>[] = []
-    const selectSession: sessionType<userType> | null =
+    const querySessionList: sessionType<userType, groupType>[] = []
+    const selectSession: sessionType<userType, groupType> | null =
       getStorage('selectSession', 'object') || null
     const chattingRecords: chatRecordType<chatItemType> | null =
       getStorage('chattingRecords', 'object') || null
@@ -29,7 +29,7 @@ export const sessionStore = defineStore('sessionStore', {
       total,
       isShowMoreBtn,
       page: 1,
-      querySessionList
+      querySessionList,
     }
   },
   actions: {
@@ -38,13 +38,16 @@ export const sessionStore = defineStore('sessionStore', {
       this.scrollType = !this.scrollType
     },
     // 查询会话
-    getQuerySessionList(search: string, clear?: boolean){
-      if(clear){
+    getQuerySessionList(search: string, clear?: boolean) {
+      if (clear) {
         this.querySessionList = []
         return
       }
-      this.querySessionList = this.sessionList.filter( item => {
-        return item.name.indexOf(search) !== -1 ||  item.Users.email.indexOf(search) !== -1
+      this.querySessionList = this.sessionList.filter((item) => {
+        return (
+          item.name.indexOf(search) !== -1 ||
+          (item.Users && item.Users.email.indexOf(search) !== -1)
+        )
       })
     },
     // 获取会话列表
@@ -73,7 +76,7 @@ export const sessionStore = defineStore('sessionStore', {
       }
     },
     // 改变会话列表
-    changeSessionList(session: sessionType<userType>, type: string) {
+    changeSessionList(session: sessionType<userType, groupType>, type: string) {
       if (type === 'add') {
         let isAdd: boolean = false
         this.sessionList.forEach((item) => {
@@ -121,7 +124,7 @@ export const sessionStore = defineStore('sessionStore', {
           })
         }
       }
-      if(type === 'agree'){
+      if (type === 'agree') {
         let isAdd: boolean = false
         this.sessionList.forEach((item) => {
           if (item.id === session.id) {
@@ -201,7 +204,7 @@ export const sessionStore = defineStore('sessionStore', {
       }
     },
     // 设置选中会话
-    setSelectSession(session: sessionType<userType>) {
+    setSelectSession(session: sessionType<userType, groupType>) {
       this.selectSession = session
       setStorage('selectSession', this.selectSession)
       // 清除选中会话提示
@@ -209,7 +212,10 @@ export const sessionStore = defineStore('sessionStore', {
         return item.id === session.id
       })
       const times = new Date()
-      const { content, time } = this.sessionList[idx].last_message || {content: '开始聊天', time: timestampChange(times, 'HH:mm')}
+      const { content, time } = this.sessionList[idx].last_message || {
+        content: '开始聊天',
+        time: timestampChange(times, 'HH:mm'),
+      }
       const lastMessage = {
         content: content,
         time: time,
@@ -220,7 +226,7 @@ export const sessionStore = defineStore('sessionStore', {
       setStorage('sessionList', this.sessionList)
     },
     // 获取聊天记录
-    async setChattingRecords(session: sessionType<userType>) {
+    async setChattingRecords(session: sessionType<userType, groupType>) {
       const message = await chatMessage({
         page: '',
         pageSize: 20,
@@ -245,7 +251,10 @@ export const sessionStore = defineStore('sessionStore', {
       return true
     },
     // 更改聊天记录/更多聊天记录
-    async moreRecord(session: sessionType<userType>, chatId: number) {
+    async moreRecord(
+      session: sessionType<userType, groupType>,
+      chatId: number
+    ) {
       this.page++
       const message = await chatMessage({
         page: chatId,
@@ -310,14 +319,14 @@ export const sessionStore = defineStore('sessionStore', {
       // 移除对应会话
       this.changeSessionList(session[0], 'delete')
     },
-    init(){
+    init() {
       this.sessionList = []
       this.selectSession = null
       this.chattingRecords = null
       removeStorage('sessionList')
       removeStorage('selectSession')
       removeStorage('chattingRecords')
-    }
+    },
   },
   getters: {
     // 判断是否展示聊天时间

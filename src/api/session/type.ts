@@ -14,7 +14,17 @@ export interface userType{
   sex: number
   status: number
 }
-export interface sessionType<T> {
+export interface groupType{
+  avatar: string
+  id: number
+  created_at: string
+  name: string
+  hot: number
+  user_id: number,
+  is_pwd: number,
+  info: string
+}
+export interface sessionType<T,K> {
   id: number,
   name: string,
   note: string,
@@ -24,8 +34,11 @@ export interface sessionType<T> {
   status: number, 
   to_id: number, 
   form_id: number, 
+  group_id?: number,
+  channel_type: number,
   top_status: number, 
-  Users: T, 
+  Users?: T, 
+  Groups?: K, 
   value?: any,
   last_message: {
     content: string,

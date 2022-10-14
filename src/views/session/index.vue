@@ -6,7 +6,7 @@ import { mainStore } from '@/store'
 import { Search, Plus, Picture, Folder, Close } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
-import type { userType, sessionType } from '@/api/session/type'
+import type { userType, groupType, sessionType } from '@/api/session/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
@@ -42,7 +42,9 @@ const selectSession = computed(() => store.selectSession)
 const chattingRecordsList = computed(() => store.chattingRecordsList)
 
 // 会话点击事件
-const sessionClick = (session: sessionType<userType>) => {
+const sessionClick = (session: sessionType<userType, groupType>) => {
+  console.log(session)
+
   isMore.value = false
   searchCnt.value = ''
   sendContent.value = ''
@@ -97,21 +99,27 @@ const sendMsg = (msgType: number = 1, message?: string) => {
   sendChatMessage({
     msg_client_id: time.getTime(),
     msg_type: msgType,
-    to_id: selectSession.value.channel_type===1 ? selectSession.value?.to_id : selectSession.value?.group_id,
-    channel_type:  selectSession.value.channel_type,
+    to_id:
+      selectSession.value.channel_type === 1
+        ? selectSession.value.to_id
+        : selectSession.value.group_id || -1,
+    channel_type: selectSession.value.channel_type || 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
     if (!selectSession.value) {
       return
     }
     // 聊天记录
+    const Users = {
+      avatar: selectSession.value.Users?.avatar || '',
+      email: selectSession.value.Users?.email || '',
+      id: selectSession.value.Users?.id || -1,
+      name: selectSession.value.Users?.name || '',
+    }
     const chatMsg = {
-      Users: {
-        avatar: selectSession.value.Users.avatar,
-        email: selectSession.value.Users.email,
-        id: selectSession.value.Users.id,
-        name: selectSession.value.Users.name,
-      },
+      Users: Users,
+      Groups: selectSession.value.Groups,
+      channel_type: selectSession.value.channel_type,
       created_at: res.send_time,
       data: res.data,
       form_id: res.form_id,
@@ -181,7 +189,7 @@ function onSelectEmoji(emo: string) {
 }
 // 语音
 const isShowVoice = ref<boolean>(false)
-function sendVoiceMsg(url: string){
+function sendVoiceMsg(url: string) {
   sendMsg(2, url)
 }
 onMounted(() => {
@@ -216,7 +224,7 @@ function onScrollMsg() {
   chatWarp.value.scrollTop = height
 }
 // 移除会话
-function handleRemoveSession(session: sessionType<userType>) {
+function handleRemoveSession(session: sessionType<userType, groupType>) {
   const result = store.changeSessionList(session, 'delete')
   result.then(() => {
     onScrollMsg()
@@ -417,6 +425,9 @@ function searchClick() {
                 </div>
               </div>
             </div>
+            <!-- <template v-if="item.channel_type === 1">
+              
+            </template> -->
           </li>
         </ul>
         <ul
@@ -479,7 +490,7 @@ function searchClick() {
     </div>
   </div>
   <div class="voice" v-if="isShowVoice">
-    <Voice @closeVoice="isShowVoice = false" @sendVoice=sendVoiceMsg></Voice>
+    <Voice @closeVoice="isShowVoice = false" @sendVoice="sendVoiceMsg"></Voice>
   </div>
   <div class="add-group-box" v-if="isAddGroup">
     <AddGroup @closeAddGroup="closeAddGroup"></AddGroup>
@@ -694,13 +705,11 @@ function searchClick() {
           height: 3px;
           border-radius: 100%; /* 圆角 */
           text-indent: -9999px;
-          box-shadow: 0 -7px 0 1px #333, /* 上, 1px 扩展 */ 
-                      7px 0px #333,/* 右 */ 
-                      0 7px #333, /* 下 */ 
-                      -7px 0 #333,/* 左 */ 
-                      -5px -5px 0 0.5px #333,/* 左上, 0.5px扩展 */ 
-                      5px -5px 0 1.5px #333,/* 右上, 1.5px扩展 */ 
-                      5px 5px #333, /* 右下 */ -5px 5px #333;
+          box-shadow: 0 -7px 0 1px #333, /* 上, 1px 扩展 */ 7px 0px #333,
+            /* 右 */ 0 7px #333, /* 下 */ -7px 0 #333,
+            /* 左 */ -5px -5px 0 0.5px #333,
+            /* 左上, 0.5px扩展 */ 5px -5px 0 1.5px #333,
+            /* 右上, 1.5px扩展 */ 5px 5px #333, /* 右下 */ -5px 5px #333;
         }
       }
       li {
@@ -931,7 +940,7 @@ function searchClick() {
   }
 }
 .spin {
-    animation: spin 1s steps(8) infinite;
+  animation: spin 1s steps(8) infinite;
 }
 .add-group-box {
   position: fixed;
@@ -954,7 +963,11 @@ function searchClick() {
   background-color: rgba(0, 0, 0, 0.5);
 }
 @keyframes spin {
-    from {transform: rotate(0deg);}
-      to {transform: rotate(360deg);}
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

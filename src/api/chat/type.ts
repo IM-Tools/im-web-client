@@ -24,6 +24,7 @@ export interface chatItemType{
   status: number
   to_id: number,
   isShowTime?: boolean,
+  channel_type: number
   Users: {
     avatar: string
     email: string

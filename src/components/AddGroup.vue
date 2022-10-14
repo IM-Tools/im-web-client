@@ -5,8 +5,9 @@ import { friendList } from '@/api/friend'
 import { computed } from '@vue/reactivity'
 import { createGroup } from '@/api/group'
 import { drawAvatar } from '@/utils/index'
-import { mainStore,sessionStore } from '@/store'
+import { mainStore, sessionStore } from '@/store'
 import { uploadFile } from '@/api/chat'
+import { createGroupDataType } from '@/api/group/type'
 import { createSession } from '@/api/session'
 // 关闭添加窗口
 const emit = defineEmits(['closeAddGroup'])
@@ -35,9 +36,9 @@ const selectUser = computed(() => {
     return item.checkType
   })
 })
-function removeUser(id: number){
-  userList.value.map( (user: any) => {
-    if(user.id === id){
+function removeUser(id: number) {
+  userList.value.map((user: any) => {
+    if (user.id === id) {
       user.checkType = false
     }
   })
@@ -48,18 +49,21 @@ const store = mainStore()
 const userInfo = computed(() => store.userInfo)
 const userAvatar = ref('')
 const blobFile = ref()
-function getImgUrl(url: string, blob: any){
+function getImgUrl(url: string, blob: any) {
   blobFile.value = blob
-  console.log(blobFile.value);
-  
+  console.log(blobFile.value)
+
   userAvatar.value = url
 }
-watch(() => selectUser.value, () => {
-  const avatarList: string[] = selectUser.value.map((item: any) => {
-    return item.Users.avatar
-  })
-  drawAvatar([...avatarList, userInfo.value.avatar], getImgUrl)
-})
+watch(
+  () => selectUser.value,
+  () => {
+    const avatarList: string[] = selectUser.value.map((item: any) => {
+      return item.Users.avatar
+    })
+    drawAvatar([...avatarList, userInfo.value.avatar], getImgUrl)
+  }
+)
 onMounted(() => {
   getUserList()
 })
@@ -76,14 +80,14 @@ const themeList = ref<string[]>([
   '圈子',
 ])
 const selectTheme = ref<string[]>([])
-const createInfo = reactive({
+const createInfo: createGroupDataType = reactive({
   name: '',
   info: '',
   avatar: '',
   password: '',
   is_pwd: 0,
   theme: '',
-  select_user: '',
+  select_user: [],
 })
 function selectThemeClick(theme: string) {
   if (selectTheme.value.indexOf(theme) !== -1) {
@@ -96,24 +100,24 @@ function selectThemeClick(theme: string) {
 const mySessionStore = sessionStore()
 const confirmAddGroup = async () => {
   const fileOfBlob = new File([blobFile.value], new Date().getTime() + '.png')
-  const res = await uploadFile({ file: fileOfBlob})
+  const res = await uploadFile({ file: fileOfBlob })
   createInfo.avatar = res.file_url
   createInfo.is_pwd = !createInfo.password ? 0 : 1
   createInfo.theme = selectTheme.value.toString()
-  const ids = selectUser.value.map((item: any) => {
+  createInfo.select_user = selectUser.value.map((item: any) => {
     return item.id
   })
-  createInfo.select_user = ids.toString()
   createGroup(createInfo).then((res: any) => {
     console.log(res)
-    createSession({
-      id: res.id,
-      type: 2,
-    }).then((res) => {
-      console.log(res)
-      mySessionStore.changeSessionList(res, 'add')
-      emit('closeAddGroup')
-    })
+    emit('closeAddGroup')
+    // createSession({
+    //   id: res.id,
+    //   type: 2,
+    // }).then((res) => {
+    //   console.log(res)
+    //   mySessionStore.changeSessionList(res, 'add')
+    //   emit('closeAddGroup')
+    // })
   })
 }
 </script>
@@ -388,7 +392,7 @@ const confirmAddGroup = async () => {
               border: 1px solid #eee;
             }
           }
-          .remove{
+          .remove {
             width: 20px;
             height: 20px;
             background-color: #dfdfdf;
@@ -397,7 +401,7 @@ const confirmAddGroup = async () => {
             justify-content: center;
             border-radius: 50%;
             cursor: pointer;
-            &:hover{
+            &:hover {
               background-color: #d4d4d4;
             }
           }
@@ -441,13 +445,13 @@ const confirmAddGroup = async () => {
               color: #fff;
             }
           }
-          .img{
+          .img {
             width: 60px;
             height: 60px;
             padding: 3px;
             box-sizing: border-box;
             background-color: #e3e4e6;
-            img{
+            img {
               width: 100%;
             }
           }

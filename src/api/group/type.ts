@@ -5,5 +5,5 @@ export interface createGroupDataType {
   password: string
   is_pwd: number
   theme: string
-  select_user: string
+  select_user: number[]
 }

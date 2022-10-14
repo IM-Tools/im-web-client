@@ -56,32 +56,36 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             if(route.path !== '/session'){
               mainStores.changPoint('session', true)
             }
-            const time = new Date()
-            const res = await getFriendDetails(message.form_id)
-            const chatMsg = {
-              Users: {
-                avatar: res.avatar,
-                email: res.email,
-                id: res.id,
-                name: res.name,
-              },
-              created_at: timestampChange(time),
-              data: message.data,
-              form_id: message.form_id,
-              id: time.getTime() + 1,
-              is_read: 0,
-              msg: message.message,
-              msg_type: message.msg_type,
-              to_id: message.to_id,
-              channel_type: message.channel_type,
-              status: 1,
+            if(message.channel_type === 1){
+              const time = new Date()
+              const res = await getFriendDetails(message.form_id)
+              const chatMsg = {
+                Users: {
+                  avatar: res.avatar,
+                  email: res.email,
+                  id: res.id,
+                  name: res.name,
+                },
+                created_at: timestampChange(time),
+                data: message.data,
+                form_id: message.form_id,
+                id: time.getTime() + 1,
+                is_read: 0,
+                msg: message.message,
+                msg_type: message.msg_type,
+                to_id: message.to_id,
+                channel_type: message.channel_type,
+                status: 1,
+              }
+              // 聊天记录
+              const result = store.changeChattingRecords(chatMsg)
+              result.then(() => {
+                store.startScroll()
+              })
+            } else{
+              console.log('群聊');
+              
             }
-            // 聊天记录
-            const result = store.changeChattingRecords(chatMsg)
-            result.then(() => {
-              store.startScroll()
-            })
-
             break
           case 1000:
             console.log('添加好友请求', message,route)
@@ -96,7 +100,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             }
             const times = new Date()
             const list = {
-              id: 0,
+              id: message.id,
               name: message.users.name,
               note: '',
               created_at: message.created_at,
@@ -106,6 +110,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
               to_id: message.to_id,
               form_id: message.form_id,
               top_status: 0,
+              channel_type: 1,
               Users: {
                 age: 0,
                 avatar: message.users.avatar,
@@ -130,10 +135,10 @@ function initWebsocket(openBack: Function, closeBack: Function) {
               created_at: message.created_at,
               form_id: message.form_id,
               id: message.form_id,
-              note: '',
+              note: message.note,
               to_id: message.to_id,
-              status: 0,
-              top_time: '',
+              status: message.status,
+              top_time: message.top_time,
               uid: '',
               update_at: '',
               Users: {
@@ -155,6 +160,35 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             break
           case 2001:
             console.log('用户上线', message)
+            break
+          case 2003:
+            console.log('群聊通知', message)
+            if(route.path !== '/session'){
+              mainStores.changPoint('session', true)
+            }
+            const timeNow = new Date()
+            const session = {
+              id: message.sessions.id,
+              name: message.sessions.name,
+              note: message.sessions.note,
+              created_at: message.sessions.created_at,
+              avatar: message.sessions.avatar,
+              top_time: message.sessions.top_time,
+              status: message.sessions.status,
+              to_id: message.sessions.to_id,
+              form_id: message.sessions.form_id,
+              group_id: message.sessions.group_id,
+              top_status: message.sessions.top_status,
+              channel_type: 2,
+              Groups: message.sessions.Groups,
+              last_message: {
+                content: '添加好友成功',
+                time: timestampChange(timeNow, 'HH:mm'),
+                isPoint: true,
+                num: 1,
+              },
+            }
+            store.changeSessionList(session, 'add')
             break
         }
       },
