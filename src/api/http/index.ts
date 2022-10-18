@@ -1,34 +1,41 @@
-import axios from "axios";
-import type {AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { ElMessage,ElNotification } from 'element-plus'
+import axios from 'axios'
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { ElMessage, ElNotification } from 'element-plus'
 import { getStorage } from '@/utils/storage'
 class Request {
   // axios 实例
-  instance: AxiosInstance;
+  instance: AxiosInstance
   // baseConfig: AxiosRequestConfig = { baseURL: "/api", timeout: 60000 };
   constructor(config: AxiosRequestConfig) {
     // 使用axios.create创建axios实例
-    this.instance = axios.create(config);
+    this.instance = axios.create(config)
     // this.instance = axios.create(Object.assign(this.baseConfig, config));
     this.instance.interceptors.request.use(
       (config: AxiosRequestConfig) => {
         // 一般会请求拦截里面加token
-        const token = getStorage('token');
-        config.headers!.Authorization = 'Bearer '+ token;
+        const token = getStorage('token')
+        config.headers!.Authorization = 'Bearer ' + token
         let { data = {}, method } = config
-        if(method === 'post' || method === 'put'){
+        if (method === 'post' || method === 'put') {
           const formData = new FormData()
           Object.keys(data).forEach((item) => {
-            formData.append(item,data[item])
+            // console.log(data, data[item] instanceof Array, data[item])
+            if (data[item] instanceof Array) {
+              data[item].forEach((el: any) => {
+                formData.append(item + '[]', el)
+              })
+            } else {
+              formData.append(item, data[item])
+            }
           })
           config.data = formData
         }
-        return config;
+        return config
       },
       (err: any) => {
-        return Promise.reject(err);
+        return Promise.reject(err)
       }
-    );
+    )
 
     this.instance.interceptors.response.use(
       (res: AxiosResponse) => {
@@ -54,21 +61,18 @@ class Request {
           type: 'error',
         })
         // 请求错误
-        return Promise.reject(err.response);
+        return Promise.reject(err.response)
       }
-    );
+    )
   }
 
   // 定义请求方法
   public request(config: AxiosRequestConfig): Promise<AxiosResponse> {
-    return this.instance.request(config);
+    return this.instance.request(config)
   }
 
-  public get<T = any>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    return this.instance.get(url, config);
+  public get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.get(url, config)
   }
 
   public post<T = any>(
@@ -76,7 +80,7 @@ class Request {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    return this.instance.post(url, data, config);
+    return this.instance.post(url, data, config)
   }
 
   public put<T = any>(
@@ -84,16 +88,13 @@ class Request {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    console.log(555);
-    return this.instance.put(url, data, config);
+    console.log(555)
+    return this.instance.put(url, data, config)
   }
 
-  public delete<T = any>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<T>{
-    return this.instance.delete(url, config);
+  public delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.instance.delete(url, config)
   }
 }
 
-export default Request;
+export default Request

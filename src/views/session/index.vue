@@ -269,6 +269,13 @@ function showMessageClick(){
     })
   }
 }
+// 音频时间
+function getAudioTime(url: string){
+  const audio = document.createElement('audio')
+  audio.src = url
+  console.dir(audio);
+  return audio.duration
+}
 </script>
 
 <template>
@@ -406,6 +413,8 @@ function showMessageClick(){
                 </div>
                 <div class="voice" v-if="item.msg_type === 2">
                   <audio :src="item.msg" controls></audio>
+                  <div class="icon">音频</div>
+                  <div class="time">{{getAudioTime(item.msg)}}</div>
                 </div>
                 <div
                   class="chat-img"

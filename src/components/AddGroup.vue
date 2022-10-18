@@ -107,6 +107,8 @@ const confirmAddGroup = async () => {
   createInfo.select_user = selectUser.value.map((item: any) => {
     return item.id
   })
+  console.log(createInfo);
+  
   createGroup(createInfo).then((res: any) => {
     console.log(res)
     emit('closeAddGroup')
