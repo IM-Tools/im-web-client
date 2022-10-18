@@ -224,7 +224,7 @@ const confirmAddGroup = async () => {
               <el-input
                 v-model="createInfo.password"
                 placeholder="加入群聊密码，选填"
-                type="password"
+                type="text"
               />
             </div>
           </div>

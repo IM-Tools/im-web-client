@@ -13,6 +13,7 @@ import { ElMessage } from 'element-plus'
 import { getFileType } from '@/utils/session'
 import Voice from '@/components/Voice.vue'
 import AddGroup from '@/components/AddGroup.vue'
+import { getGroupUserInfo } from '@/api/group'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -106,6 +107,8 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     channel_type: selectSession.value.channel_type || 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
   }).then((res) => {
+    console.log(res)
+
     if (!selectSession.value) {
       return
     }
@@ -118,7 +121,6 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     }
     const chatMsg = {
       Users: Users,
-      Groups: selectSession.value.Groups,
       channel_type: selectSession.value.channel_type,
       created_at: res.send_time,
       data: res.data,
@@ -256,6 +258,17 @@ function searchClick() {
   }
   store.getQuerySessionList(searchCnt.value)
 }
+// 聊天信息展示
+const showMessage = ref<boolean>(false)
+function showMessageClick(){
+  showMessage.value = !showMessage.value
+  if(selectSession.value?.channel_type === 2){
+    getGroupUserInfo({id: selectSession.value.group_id || selectSession.value.id}).then( res => {
+      console.log(res);
+      
+    })
+  }
+}
 </script>
 
 <template>
@@ -353,6 +366,7 @@ function searchClick() {
     <div class="session-cnt">
       <div class="chat-top">
         {{ selectSession?.name }}
+        <span class="tool" @click="showMessageClick">···</span>
       </div>
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
@@ -485,6 +499,20 @@ function searchClick() {
         </div>
         <div class="emoji" v-if="isShowEmoji">
           <Emoji @onSelectEmoji="onSelectEmoji"></Emoji>
+        </div>
+      </div>
+      <div class="message" :class="{ 'show-message': showMessage }">
+        <div class="user-list">
+          <div class="user">
+            <div class="avatar">
+              <img :src="selectSession?.avatar" alt="" />
+            </div>
+            <div class="name">{{ selectSession?.name }}</div>
+          </div>
+          <div class="user" @click="addBtnClick">
+            <div class="avatar"><Plus /></div>
+            <div class="name">添加</div>
+          </div>
         </div>
       </div>
     </div>
@@ -667,6 +695,7 @@ function searchClick() {
     height: 100%;
     background-color: #f9f9f9;
     border-left: 1px solid #e8eaec;
+    position: relative;
     .chat-top {
       height: 50px;
       width: 100%;
@@ -674,6 +703,20 @@ function searchClick() {
       box-sizing: border-box;
       line-height: 50px;
       text-align: center;
+      position: relative;
+      .tool {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        letter-spacing: 1px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #555;
+        &:hover {
+          color: #222;
+        }
+      }
     }
     & > .chat-msg-warp {
       width: 100%;
@@ -936,6 +979,54 @@ function searchClick() {
         width: 300px;
         min-height: 200px;
       }
+    }
+    & > .message {
+      width: 0;
+      background-color: #fff;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+      .user-list {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        box-sizing: border-box;
+        padding: 20px;
+        .user {
+          width: 60px;
+          height: 60px;
+          cursor: pointer;
+          .avatar {
+            width: 45px;
+            height: 45px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            img {
+              width: 100%;
+            }
+            svg{
+              width: 24px;
+            }
+          }
+          .name {
+            font-size: 14px;
+            width: 100%;
+            text-align: center;
+            margin-top: 5px;
+          }
+        }
+      }
+    }
+    .show-message {
+      width: 300px;
     }
   }
 }

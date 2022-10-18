@@ -1,19 +1,19 @@
 export interface chatData {
-  page: number | string,
-  pageSize: number | string,
-  to_id: number | string,
+  page: number | string
+  pageSize: number | string
+  to_id: number | string
 }
 
 export interface sendChatData {
-  msg_client_id: number | string,//客户端唯一值 用时间戳生成
-  msg_type: number,//1.文本 2.语音 3.文件
-  to_id: number,//推送人
-  channel_type: number,//1.私聊 2.频道 3.广播
-  data?: string,
-  message: string,
+  msg_client_id: number | string //客户端唯一值 用时间戳生成
+  msg_type: number //1.文本 2.语音 3.文件
+  to_id: number //推送人
+  channel_type: number //1.私聊 2.频道 3.广播
+  data?: string
+  message: string
 }
 
-export interface chatItemType{
+export interface chatItemType {
   created_at: string
   data: string
   form_id: number
@@ -22,8 +22,8 @@ export interface chatItemType{
   msg: string
   msg_type: number
   status: number
-  to_id: number,
-  isShowTime?: boolean,
+  to_id: number
+  isShowTime?: boolean
   channel_type: number
   Users: {
     avatar: string
@@ -32,13 +32,29 @@ export interface chatItemType{
     name: string
   }
 }
-export interface chatRecordType<T>{
-  list: T[],
+
+export interface chatGroupType {
+  ClientMessageId: number
+  FormId: number
+  GroupId: number
+  Id: number
+  Message: string
+  MessageId: number
+  SendTime: number
+  Users: {
+    avatar: string
+    email: string
+    id: number
+    name: string
+  }
+}
+export interface chatRecordType<T> {
+  list: T[]
   mate: {
-    page: number,
-    pageSize: number,
+    page: number
+    pageSize: number
     total: number
-  },
+  }
   id?: number
   from_id?: number
 }
