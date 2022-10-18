@@ -413,8 +413,8 @@ function getAudioTime(url: string){
                 </div>
                 <div class="voice" v-if="item.msg_type === 2">
                   <audio :src="item.msg" controls></audio>
-                  <div class="icon">音频</div>
-                  <div class="time">{{getAudioTime(item.msg)}}</div>
+                  <!-- <div class="icon">音频</div>
+                  <div class="time">{{getAudioTime(item.msg)}}</div> -->
                 </div>
                 <div
                   class="chat-img"
