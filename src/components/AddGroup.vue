@@ -14,6 +14,12 @@ const emit = defineEmits(['closeAddGroup'])
 const closeAddGroup = () => {
   emit('closeAddGroup')
 }
+// const props = defineProps({
+//   isShowTool: {
+//     type: Boolean,
+//     required: true,
+//   },
+// })
 // 搜索用户名
 const searchName = ref('')
 // 获得用户列表
@@ -107,8 +113,8 @@ const confirmAddGroup = async () => {
   createInfo.select_user = selectUser.value.map((item: any) => {
     return item.id
   })
-  console.log(createInfo);
-  
+  console.log(createInfo)
+
   createGroup(createInfo).then((res: any) => {
     console.log(res)
     emit('closeAddGroup')
@@ -179,6 +185,7 @@ const confirmAddGroup = async () => {
             </li>
           </ul>
         </div>
+        <!--  v-if="isShowTool" -->
         <div class="message">
           <div class="option">
             <div class="label">群头像：</div>

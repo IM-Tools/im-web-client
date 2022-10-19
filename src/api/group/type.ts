@@ -7,3 +7,33 @@ export interface createGroupDataType {
   theme: string
   select_user: number[]
 }
+
+export interface groupUserType {
+  avatar: string
+  created_at: string
+  group_id: number
+  id: number
+  name: string
+  remark: string
+  user_id: number
+  users: {
+    age: number,
+    avatar: string,
+    email: string,
+    name: string,
+    id: number
+  }
+}
+
+export interface groupInfoType<T>{
+  group_users: T[],
+  groups: {
+    avatar: string
+    created_at: string
+    id: number
+    info: string
+    name: string
+    user_id: number,
+    is_pwd: number
+  }
+}

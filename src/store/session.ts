@@ -163,7 +163,8 @@ export const sessionStore = defineStore('sessionStore', {
             !this.selectSession ||
             this.sessionList[idx].id !== this.selectSession.id
           ) {
-            const { isPoint, num } = this.sessionList[idx].last_message
+            const isPoint = this.sessionList[idx].last_message ? this.sessionList[idx].last_message.isPoint: undefined
+            const num = this.sessionList[idx].last_message ? this.sessionList[idx].last_message.num: undefined
             let number = 1
             if (isPoint && num) {
               number = num + 1

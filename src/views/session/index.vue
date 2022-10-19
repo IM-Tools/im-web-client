@@ -7,13 +7,15 @@ import { Search, Plus, Picture, Folder, Close } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, groupType, sessionType } from '@/api/session/type'
+import type { groupUserType } from '@/api/group/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
 import { getFileType } from '@/utils/session'
 import Voice from '@/components/Voice.vue'
 import AddGroup from '@/components/AddGroup.vue'
-import { getGroupUserInfo } from '@/api/group'
+import MyAudio from '@/components/MyAudio.vue'
+import { getGroupUserInfo, deleteGroup } from '@/api/group'
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -25,7 +27,16 @@ const handleKeyDown = (e: any) => {
 }
 // 是否创建群聊
 const isAddGroup = ref(false)
+// 是否显示邀请侧边栏
+const isShowTool = ref(true)
 const addBtnClick = () => {
+  showMessage.value = false
+  isShowTool.value = true
+  isAddGroup.value = true
+}
+function inviteBtnClick(){
+  showMessage.value = false
+  isShowTool.value = false
   isAddGroup.value = true
 }
 const closeAddGroup = () => {
@@ -260,26 +271,43 @@ function searchClick() {
 }
 // 聊天信息展示
 const showMessage = ref<boolean>(false)
-function showMessageClick(){
+const groupList = ref<groupUserType[]>([])
+function showMessageClick() {
   showMessage.value = !showMessage.value
-  if(selectSession.value?.channel_type === 2){
-    getGroupUserInfo({id: selectSession.value.group_id || selectSession.value.id}).then( res => {
-      console.log(res);
-      
+  if (selectSession.value?.channel_type === 2) {
+    getGroupUserInfo({
+      id: selectSession.value.group_id || selectSession.value.id,
+    }).then((res) => {
+      console.log(res)
+      groupList.value = res.group_users
     })
   }
 }
 // 音频时间
-function getAudioTime(url: string){
+function getAudioTime(url: string) {
   const audio = document.createElement('audio')
   audio.src = url
-  console.dir(audio);
+  console.dir(audio)
   return audio.duration
+}
+// 退出群聊
+function deleteGroupClick(){
+  console.log(333);
+  if(!selectSession.value){
+    return
+  }
+  deleteGroup({id: selectSession.value.id}).then( () => {
+    showMessage.value = false
+    if(!selectSession.value){
+      return
+    }
+    handleRemoveSession(selectSession.value)
+  })
 }
 </script>
 
 <template>
-  <div class="session">
+  <div class="session" @click="showMessage = false">
     <div class="session-list">
       <div class="search">
         <div class="cnt">
@@ -373,7 +401,7 @@ function getAudioTime(url: string){
     <div class="session-cnt">
       <div class="chat-top">
         {{ selectSession?.name }}
-        <span class="tool" @click="showMessageClick">···</span>
+        <span class="tool" @click.stop="showMessageClick">···</span>
       </div>
       <div class="chat-msg-warp" ref="chatWarp">
         <ul
@@ -411,8 +439,9 @@ function getAudioTime(url: string){
                 <div class="chat-cnt" v-if="item.msg_type === 1">
                   {{ item.msg }}
                 </div>
-                <div class="voice" v-if="item.msg_type === 2">
-                  <audio :src="item.msg" controls></audio>
+                <div class="audio" v-if="item.msg_type === 2">
+                  <!-- <audio :src="item.msg" controls></audio> -->
+                  <MyAudio :img-url="item.msg" :isOwn="item.form_id === userInfo.id"></MyAudio>
                   <!-- <div class="icon">音频</div>
                   <div class="time">{{getAudioTime(item.msg)}}</div> -->
                 </div>
@@ -510,8 +539,8 @@ function getAudioTime(url: string){
           <Emoji @onSelectEmoji="onSelectEmoji"></Emoji>
         </div>
       </div>
-      <div class="message" :class="{ 'show-message': showMessage }">
-        <div class="user-list">
+      <div class="message" :class="{ 'show-message': showMessage }" @click.stop>
+        <div class="user-list private" v-if="selectSession?.channel_type === 1">
           <div class="user">
             <div class="avatar">
               <img :src="selectSession?.avatar" alt="" />
@@ -523,6 +552,46 @@ function getAudioTime(url: string){
             <div class="name">添加</div>
           </div>
         </div>
+        <div class="group-list" v-else>
+          <div class="group-search">
+            <el-input
+              v-model="searchCnt"
+              class="w-50 m-2"
+              placeholder="搜索"
+              :prefix-icon="Search"
+              clearable
+            />
+          </div>
+          <div class="user-list">
+            <div class="user" v-for="item in groupList" :key="item.id">
+              <div class="avatar">
+                <img :src="item.users.avatar || item.avatar" alt="" />
+              </div>
+              <div class="name">{{ item.users.name || item.name }}</div>
+            </div>
+            <div class="user" @click="inviteBtnClick">
+              <div class="avatar"><Plus /></div>
+              <div class="name">添加</div>
+            </div>
+          </div>
+          <div class="introduce">
+            <div class="option">
+              <div class="tit">群名称</div>
+              <div class="cnt">{{selectSession?.Groups?.name}}</div>
+            </div>
+            <div class="option">
+              <div class="tit">群描述</div>
+              <div class="cnt">{{selectSession?.Groups?.info || '暂无'}}</div>
+            </div>
+            <div class="option">
+              <div class="tit">备注</div>
+              <div class="cnt">{{selectSession?.note || '暂无'}}</div>
+            </div>
+          </div>
+          <div class="group-tool" @click="deleteGroupClick">
+            <div class="bt">退出群聊</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -530,7 +599,7 @@ function getAudioTime(url: string){
     <Voice @closeVoice="isShowVoice = false" @sendVoice="sendVoiceMsg"></Voice>
   </div>
   <div class="add-group-box" v-if="isAddGroup">
-    <AddGroup @closeAddGroup="closeAddGroup"></AddGroup>
+    <AddGroup @closeAddGroup="closeAddGroup" :isShowTool="isShowTool"></AddGroup>
   </div>
   <div class="mask" v-if="isAddGroup"></div>
 </template>
@@ -809,11 +878,18 @@ function getAudioTime(url: string){
             color: #333;
             line-height: 28px;
             background-color: #fff;
-            padding: 10px 15px;
+            padding: 5px 15px;
             border-radius: 5px;
             box-shadow: 0 0 5px #eee;
             display: inline-block;
             user-select: text;
+          }
+          .audio{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            
+            
           }
           .chat-img {
             width: 100%;
@@ -889,11 +965,14 @@ function getAudioTime(url: string){
             color: #333;
             line-height: 28px;
             background-color: #6084e7;
-            padding: 10px 15px;
+            padding: 5px 15px;
             border-radius: 5px;
             box-shadow: 0 0 5px #89a3eb;
             display: inline-block;
             color: #fff;
+          }
+          .audio{
+            justify-content: flex-end;
           }
           .chat-name {
             display: flex;
@@ -1000,17 +1079,22 @@ function getAudioTime(url: string){
       transition: all 0.3s;
       .user-list {
         width: 100%;
-        display: flex;
-        flex-wrap: wrap;
         box-sizing: border-box;
-        padding: 20px;
+        overflow: hidden;
+        // display: flex;
+        // flex-wrap: wrap;
+        // align-content: flex-start;
+        // justify-content: space-between;
+
         .user {
-          width: 60px;
+          width: 23%;
           height: 60px;
           cursor: pointer;
+          float: left;
+          margin: 0 1% 20px;
           .avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             margin: 0 auto;
             box-sizing: border-box;
             border: 1px solid #eee;
@@ -1021,7 +1105,7 @@ function getAudioTime(url: string){
             img {
               width: 100%;
             }
-            svg{
+            svg {
               width: 24px;
             }
           }
@@ -1030,6 +1114,61 @@ function getAudioTime(url: string){
             width: 100%;
             text-align: center;
             margin-top: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+      .private {
+        padding: 20px;
+      }
+      .group-list {
+        padding: 20px;
+        height: 100%;
+        .group-search {
+          margin-bottom: 25px;
+        }
+        .user-list {
+          width: 100%;
+          height: calc(100% - 410px);
+          overflow-y: auto;
+          padding: 0 0 30px;
+          border-bottom: 1px solid #eee;
+          margin-bottom: 20px;
+        }
+        .introduce {
+          width: 100%;
+          height: 250px;
+          .option{
+            width: 100%;
+            line-height: 25px;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            .tit{
+              width: 100%;
+              font-weight: 700;
+            }
+            .cnt{
+              font-size: 14px;
+              max-height: 100px;
+              overflow-y: auto;
+            }
+          }
+        }
+        .group-tool{
+          width: 100%;
+          height: 50px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-top: 1px solid #eee;
+          .bt{
+            color: #e41f1f;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
           }
         }
       }
