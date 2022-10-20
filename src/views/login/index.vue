@@ -17,8 +17,8 @@ const router = useRouter()
 const store = mainStore()
 // 用户账号密码
 const userInfo = reactive({
-  account: '1752837807@qq.com',
-  password: '123456',
+  account: '',
+  password: '',
 })
 onMounted(() => {
   githubLogin('login')

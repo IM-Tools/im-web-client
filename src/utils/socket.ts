@@ -1,5 +1,5 @@
 import { useWebSocket } from '@vueuse/core'
-import { sessionStore,userStore,mainStore } from '@/store'
+import { sessionStore, userStore, mainStore } from '@/store'
 // import { computed } from '@vue/reactivity'
 import { timestampChange } from '@/utils'
 import { getFriendDetails } from '@/api/friend'
@@ -52,50 +52,62 @@ function initWebsocket(openBack: Function, closeBack: Function) {
         const message = JSON.parse(event.data)
         switch (message.msg_code) {
           case 200:
-            console.log('聊天消息', message,route.path)
-            if(route.path !== '/session'){
+            console.log('聊天消息', message, route.path)
+            if (route.path !== '/session') {
               mainStores.changPoint('session', true)
             }
-            if(message.channel_type === 1){
-              const time = new Date()
-              const res = await getFriendDetails(message.form_id)
-              const chatMsg = {
-                Users: {
-                  avatar: res.avatar,
-                  email: res.email,
-                  id: res.id,
-                  name: res.name,
-                },
-                created_at: timestampChange(time),
-                data: message.data,
-                form_id: message.form_id,
-                id: time.getTime() + 1,
-                is_read: 0,
-                msg: message.message,
-                msg_type: message.msg_type,
-                to_id: message.to_id,
-                channel_type: message.channel_type,
-                status: 1,
-              }
-              // 聊天记录
-              const result = store.changeChattingRecords(chatMsg)
-              result.then(() => {
-                store.startScroll()
-              })
-            } else{
-              console.log('群聊');
-              
+            const time = new Date()
+            let Users = {
+              avatar: '',
+              email: '',
+              id: -1,
+              name: '',
             }
+            if (message.channel_type === 1) {
+              const res = await getFriendDetails(message.form_id)
+              Users = {
+                avatar: res.avatar,
+                email: res.email,
+                id: res.id,
+                name: res.name,
+              }
+            } else {
+              const users = JSON.parse(message.data)
+              Users = {
+                avatar: users.avatar,
+                email: users.email,
+                id: users.id,
+                name: users.name,
+              }
+            }
+            const chatMsg = {
+              Users: Users,
+              created_at: timestampChange(time),
+              data: message.data,
+              form_id: message.form_id,
+              id: time.getTime() + 1,
+              is_read: 0,
+              msg: message.message,
+              msg_type: message.msg_type,
+              to_id: message.to_id,
+              channel_type: message.channel_type,
+              status: 1,
+            }
+            // 聊天记录
+            const result = store.changeChattingRecords(chatMsg)
+            result.then(() => {
+              store.startScroll()
+            })
             break
           case 1000:
-            console.log('添加好友请求', message,route)
-            if(route.path !== '/address'){
+            console.log('添加好友请求', message, route)
+            if (route.path !== '/address') {
               mainStores.changPoint('address', true)
             }
             break
           case 1001:
             console.log('同意好友请求', message)
-            if(route.path !== '/session'){
+            if (route.path !== '/session') {
               mainStores.changPoint('session', true)
             }
             const times = new Date()
@@ -163,7 +175,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             break
           case 2003:
             console.log('群聊通知', message)
-            if(route.path !== '/session'){
+            if (route.path !== '/session') {
               mainStores.changPoint('session', true)
             }
             const timeNow = new Date()

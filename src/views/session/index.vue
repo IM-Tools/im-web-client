@@ -43,7 +43,7 @@ const closeAddGroup = () => {
   isAddGroup.value = false
 }
 // 用户信息
-const userInfo = baseStore.userInfo
+const userInfo = computed( () => baseStore.userInfo)
 const isMore = ref<boolean>(false)
 // 获得会话列表
 store.setSessionList()
@@ -102,11 +102,9 @@ const sendMsg = (msgType: number = 1, message?: string) => {
     })
     return
   }
-  console.log(sendContent.value)
   if (!sendContent.value && msgType === 1) {
     return
   }
-  console.log(selectSession.value)
   const time = new Date()
   sendChatMessage({
     msg_client_id: time.getTime(),
@@ -117,10 +115,13 @@ const sendMsg = (msgType: number = 1, message?: string) => {
         : selectSession.value.group_id || -1,
     channel_type: selectSession.value.channel_type || 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
+    data: selectSession.value.channel_type === 1 ? '' : JSON.stringify(userInfo.value)
   }).then((res) => {
-    console.log(res)
-
     if (!selectSession.value) {
+      return
+    }
+    if(selectSession.value.channel_type === 2){
+      sendContent.value = ''
       return
     }
     // 聊天记录

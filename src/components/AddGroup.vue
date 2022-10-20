@@ -111,7 +111,7 @@ const confirmAddGroup = async () => {
   createInfo.is_pwd = !createInfo.password ? 0 : 1
   createInfo.theme = selectTheme.value.toString()
   createInfo.select_user = selectUser.value.map((item: any) => {
-    return item.id
+    return item.Users.id
   })
   console.log(createInfo)
 
