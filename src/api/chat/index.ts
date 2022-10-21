@@ -8,7 +8,7 @@ import {
 } from './type'
 // 获取私聊消息
 export function chatMessage(params: chatData) {
-  return request.get<chatRecordType<chatItemType>>('/messages', { params })
+  return request.get<chatRecordType<chatItemType>>('/messages/', { params })
 }
 // 获取群聊消息
 export function chatGroupMessage(params: chatData) {

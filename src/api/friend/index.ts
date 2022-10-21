@@ -2,7 +2,7 @@ import request from '../request'
 import type { recordFriend, requestListType, userType, friendRecordType, friendType,noFriendType} from './type'
 // 获取好友列表
 export function friendList(params?: Object) {
-  return request.get('/friends', { params })
+  return request.get('/friends/', { params })
 }
 //添加好友
 export function recordFriend(data: recordFriend) {
