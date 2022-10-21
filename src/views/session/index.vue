@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, reactive } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
@@ -16,6 +16,30 @@ import Voice from '@/components/Voice.vue'
 import AddGroup from '@/components/AddGroup.vue'
 import MyAudio from '@/components/MyAudio.vue'
 import { getGroupUserInfo, deleteGroup } from '@/api/group'
+import UserMsg from '@/components/UserMsg.vue'
+import usePoint from '@/hooks/usePoint'
+const { getPoint } = usePoint()
+// 头像点击
+const point = ref()
+const isShowMsg = ref(false)
+const userMsg = ref()
+function avatarClick(e: any, user: any){
+  console.log(user);
+  
+  const msg = {
+    avatar: user.Users.avatar,
+    name: user.Users.name,
+    email: user.Users.email
+  }
+  if(user.form_id === userInfo.value.id){
+    msg.avatar = userInfo.value.avatar
+    msg.name = userInfo.value.name
+    msg.email = userInfo.value.email
+  }
+  userMsg.value = msg
+  isShowMsg.value = true
+  point.value = getPoint(e)
+}
 const store = sessionStore()
 const baseStore = mainStore()
 // 搜索内容
@@ -34,7 +58,7 @@ const addBtnClick = () => {
   isShowTool.value = true
   isAddGroup.value = true
 }
-function inviteBtnClick(){
+function inviteBtnClick() {
   showMessage.value = false
   isShowTool.value = false
   isAddGroup.value = true
@@ -43,7 +67,7 @@ const closeAddGroup = () => {
   isAddGroup.value = false
 }
 // 用户信息
-const userInfo = computed( () => baseStore.userInfo)
+const userInfo = computed(() => baseStore.userInfo)
 const isMore = ref<boolean>(false)
 // 获得会话列表
 store.setSessionList()
@@ -115,12 +139,15 @@ const sendMsg = (msgType: number = 1, message?: string) => {
         : selectSession.value.group_id || -1,
     channel_type: selectSession.value.channel_type || 1,
     message: (msgType === 1 ? sendContent.value : message) || '',
-    data: selectSession.value.channel_type === 1 ? '' : JSON.stringify(userInfo.value)
+    data:
+      selectSession.value.channel_type === 1
+        ? ''
+        : JSON.stringify(userInfo.value),
   }).then((res) => {
     if (!selectSession.value) {
       return
     }
-    if(selectSession.value.channel_type === 2){
+    if (selectSession.value.channel_type === 2) {
       sendContent.value = ''
       return
     }
@@ -284,22 +311,15 @@ function showMessageClick() {
     })
   }
 }
-// 音频时间
-function getAudioTime(url: string) {
-  const audio = document.createElement('audio')
-  audio.src = url
-  console.dir(audio)
-  return audio.duration
-}
 // 退出群聊
-function deleteGroupClick(){
-  console.log(333);
-  if(!selectSession.value){
+function deleteGroupClick() {
+  console.log(333)
+  if (!selectSession.value) {
     return
   }
-  deleteGroup({id: selectSession.value.id}).then( () => {
+  deleteGroup({ id: selectSession.value.id }).then(() => {
     showMessage.value = false
-    if(!selectSession.value){
+    if (!selectSession.value) {
       return
     }
     handleRemoveSession(selectSession.value)
@@ -308,7 +328,7 @@ function deleteGroupClick(){
 </script>
 
 <template>
-  <div class="session" @click="showMessage = false">
+  <div class="session" @click="showMessage = false,isShowMsg = false">
     <div class="session-list">
       <div class="search">
         <div class="cnt">
@@ -424,7 +444,7 @@ function deleteGroupClick(){
               <span>{{ getChatPotinTime(item.created_at) }}</span>
             </p>
             <div class="box" :class="{ own: item.form_id === userInfo.id }">
-              <div class="avatar">
+              <div class="avatar" @click.stop="avatarClick($event, item)">
                 <img
                   :src="item.Users.avatar"
                   alt=""
@@ -442,7 +462,10 @@ function deleteGroupClick(){
                 </div>
                 <div class="audio" v-if="item.msg_type === 2">
                   <!-- <audio :src="item.msg" controls></audio> -->
-                  <MyAudio :img-url="item.msg" :isOwn="item.form_id === userInfo.id"></MyAudio>
+                  <MyAudio
+                    :img-url="item.msg"
+                    :isOwn="item.form_id === userInfo.id"
+                  ></MyAudio>
                   <!-- <div class="icon">音频</div>
                   <div class="time">{{getAudioTime(item.msg)}}</div> -->
                 </div>
@@ -578,15 +601,15 @@ function deleteGroupClick(){
           <div class="introduce">
             <div class="option">
               <div class="tit">群名称</div>
-              <div class="cnt">{{selectSession?.Groups?.name}}</div>
+              <div class="cnt">{{ selectSession?.Groups?.name }}</div>
             </div>
             <div class="option">
               <div class="tit">群描述</div>
-              <div class="cnt">{{selectSession?.Groups?.info || '暂无'}}</div>
+              <div class="cnt">{{ selectSession?.Groups?.info || '暂无' }}</div>
             </div>
             <div class="option">
               <div class="tit">备注</div>
-              <div class="cnt">{{selectSession?.note || '暂无'}}</div>
+              <div class="cnt">{{ selectSession?.note || '暂无' }}</div>
             </div>
           </div>
           <div class="group-tool" @click="deleteGroupClick">
@@ -600,9 +623,13 @@ function deleteGroupClick(){
     <Voice @closeVoice="isShowVoice = false" @sendVoice="sendVoiceMsg"></Voice>
   </div>
   <div class="add-group-box" v-if="isAddGroup">
-    <AddGroup @closeAddGroup="closeAddGroup" :isShowTool="isShowTool"></AddGroup>
+    <AddGroup
+      @closeAddGroup="closeAddGroup"
+      :isShowTool="isShowTool"
+    ></AddGroup>
   </div>
   <div class="mask" v-if="isAddGroup"></div>
+  <UserMsg :userMsg="userMsg" :point="point" :isShowMsg="isShowMsg"></UserMsg>
 </template>
 
 <style scoped lang="less">
@@ -885,12 +912,10 @@ function deleteGroupClick(){
             display: inline-block;
             user-select: text;
           }
-          .audio{
+          .audio {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            
-            
           }
           .chat-img {
             width: 100%;
@@ -972,7 +997,7 @@ function deleteGroupClick(){
             display: inline-block;
             color: #fff;
           }
-          .audio{
+          .audio {
             justify-content: flex-end;
           }
           .chat-name {
@@ -1141,31 +1166,31 @@ function deleteGroupClick(){
         .introduce {
           width: 100%;
           height: 250px;
-          .option{
+          .option {
             width: 100%;
             line-height: 25px;
             font-size: 16px;
             color: #333;
             margin-bottom: 10px;
-            .tit{
+            .tit {
               width: 100%;
               font-weight: 700;
             }
-            .cnt{
+            .cnt {
               font-size: 14px;
               max-height: 100px;
               overflow-y: auto;
             }
           }
         }
-        .group-tool{
+        .group-tool {
           width: 100%;
           height: 50px;
           display: flex;
           justify-content: center;
           align-items: center;
           border-top: 1px solid #eee;
-          .bt{
+          .bt {
             color: #e41f1f;
             padding: 5px 10px;
             font-size: 14px;
