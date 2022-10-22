@@ -648,7 +648,7 @@ function deleteGroupClick() {
       width: 100%;
       box-sizing: border-box;
       padding: 0 10px;
-      background-color: #f9f9f9;
+      background-color: var(--search-color);
       .cnt {
         margin-right: 10px;
       }
@@ -678,16 +678,17 @@ function deleteGroupClick() {
         box-sizing: border-box;
         height: 65px;
         align-items: center;
+        color:var(--select-userSizeColor);
         justify-content: center;
         position: relative;
         cursor: pointer;
         &:hover {
-          background-color: #e2e2e2;
+          background-color: var(--select-userColor);
         }
         .img {
           width: 50px;
           height: 50px;
-          background-color: #e3e4e6;
+          background-color: var(--theme-bgColor);
           border-radius: 5px;
           position: relative;
           img {
@@ -714,7 +715,7 @@ function deleteGroupClick() {
             position: absolute;
             text-align: center;
             border-radius: 50%;
-            color: #fff;
+            color: var(--size-color);
             font-size: 12px;
             top: -3px;
             right: -5px;
@@ -750,15 +751,16 @@ function deleteGroupClick() {
             font-weight: 700;
             display: flex;
             justify-content: space-between;
+            color: var(--size-color);
             .time {
               font-size: 14px;
-              color: #777;
+              color: var(--user-timeColor);
               font-weight: 500;
             }
           }
           .message {
             font-size: 14px;
-            color: #555;
+            color: var(--size-color);
             width: 100%;
             white-space: nowrap;
             overflow: hidden;
@@ -779,7 +781,7 @@ function deleteGroupClick() {
           display: none;
           &:hover {
             background-color: #eb2d2d;
-            color: #fff;
+            color: var(--size-color);
           }
         }
         &:hover {
@@ -792,24 +794,25 @@ function deleteGroupClick() {
         background-color: #eeeeee !important;
       }
       .select {
-        background-color: #cfcfcf !important;
+        background-color: var(--select-userColor) !important;
       }
     }
   }
   .session-cnt {
     flex: 1;
     height: 100%;
-    background-color: #f9f9f9;
-    border-left: 1px solid #e8eaec;
+    background-color: var(--theme-bgColor);
+    border-left: 1px solid var(--border-color);
     position: relative;
     .chat-top {
       height: 50px;
       width: 100%;
-      border-bottom: 1px solid #e8eaec;
+      border-bottom: 1px solid var(--border-color);
       box-sizing: border-box;
       line-height: 50px;
       text-align: center;
       position: relative;
+      color:var(--title-color);
       .tool {
         position: absolute;
         top: 0;
@@ -818,7 +821,7 @@ function deleteGroupClick() {
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
-        color: #555;
+        color: var(--size-color);
         &:hover {
           color: #222;
         }
@@ -829,6 +832,7 @@ function deleteGroupClick() {
       height: calc(100% - 220px);
       padding: 0px 10px 20px;
       box-sizing: border-box;
+      background-color: var(--theme-bgColor);
       overflow-y: auto;
       ul {
         padding: 15px 0 0;
@@ -870,9 +874,8 @@ function deleteGroupClick() {
           line-height: 30px;
           span {
             padding: 4px 15px;
-            background-color: #eee;
             cursor: pointer;
-            color: #a7a7a7;
+            color: var(--size-color);
           }
         }
         .box {
@@ -883,7 +886,7 @@ function deleteGroupClick() {
           height: 45px;
           border-radius: 3px;
           overflow: hidden;
-          background-color: #eeecec;
+          background-color: var(--b);
           img {
             width: 100%;
             height: 100%;
@@ -896,7 +899,7 @@ function deleteGroupClick() {
           .chat-name {
             width: 100%;
             font-size: 14px;
-            color: #555;
+            color: var(--size-color);
             line-height: 25px;
             margin-top: -10px;
             margin-bottom: 3px;
@@ -1015,8 +1018,8 @@ function deleteGroupClick() {
       width: 100%;
       height: 170px;
       box-sizing: border-box;
-      border-top: 1px solid #e8eaec;
-      background-color: #f9f9f9;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--theme-bgColor);
       position: relative;
       .tool {
         width: 100%;
@@ -1062,9 +1065,9 @@ function deleteGroupClick() {
           outline: none;
           box-sizing: border-box;
           padding: 10px 20px;
-          color: #333;
+          color:var(--size-color);
           line-height: 26px;
-          background-color: #f9f9f9;
+          background-color: var(--theme-bgColor);
         }
       }
       .btn {
@@ -1096,7 +1099,7 @@ function deleteGroupClick() {
     }
     & > .message {
       width: 0;
-      background-color: #fff;
+      background-color: var(--dialog-bgColor);
       position: absolute;
       top: 50px;
       right: 0;
@@ -1143,6 +1146,7 @@ function deleteGroupClick() {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            color:var(--title-color);
           }
         }
       }

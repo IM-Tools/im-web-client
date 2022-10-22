@@ -95,14 +95,14 @@ const addFriendClick = (user: noFriendType) => {
   height: 600px;
   border-radius: 3px;
   overflow: hidden;
-  background-color: #fff;
+  background-color: var(--theme-bgColor);
   .head-title {
     width: 100%;
     height: 50px;
     text-align: center;
     line-height: 50px;
     background-color: #4f6fc7;
-    color: #fff;
+    color: var(--size-color);
     position: relative;
     span {
       position: absolute;
@@ -122,7 +122,7 @@ const addFriendClick = (user: noFriendType) => {
     width: 100%;
     box-sizing: border-box;
     padding: 20px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     .search-warp {
       display: flex;
       width: 100%;
@@ -140,7 +140,7 @@ const addFriendClick = (user: noFriendType) => {
     p {
       width: 100%;
       font-size: 16px;
-      color: #666;
+      color: var(--size-color);
     }
     .friend-list {
       width: 100%;
@@ -161,7 +161,7 @@ const addFriendClick = (user: noFriendType) => {
             width: 65px;
             height: 65px;
             border-radius: 50%;
-            background-color: #ddeafc;
+            background-color: var(--theme-bgColor);
             margin-right: 10px;
             overflow: hidden;
             img {
@@ -176,14 +176,14 @@ const addFriendClick = (user: noFriendType) => {
             box-sizing: border-box;
             padding-right: 15px;
             .title {
-              color: #333;
+              color: var(--size-color);
               line-height: 24px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: no-warp;
             }
             .msg {
-              color: #555;
+              color: var(--size-color);
               width: 100%;
               overflow: hidden;
               text-overflow: ellipsis;

@@ -20,8 +20,8 @@ function onSelectEmoji(emoji: any) {
 .emotion{
   width: 100%;
   height: 300px;
-  background-color: #fff;
-  box-shadow: 0 0px 1px #a7a7a7;
+  background-color: var(--dialog-bgColor);
+  box-shadow: 0 0px 1px var(--border-color);
   border-radius: 5px;
   position: relative;
   &::after{
@@ -29,13 +29,13 @@ function onSelectEmoji(emoji: any) {
     display: block;
     width: 10px;
     height: 10px;
-    border-right: 2px solid #eee;
-    border-bottom: 2px solid #eee;
+    border-right: 2px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
     transform: rotateZ(45deg);
     position: absolute;
     bottom: -8px;
     left: 73px;
-    background-color: #fff;
+    background-color: var(--dialog-bgColor);
   }
   ul{
     display: flex;

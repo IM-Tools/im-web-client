@@ -242,12 +242,13 @@ const confirmAddGroup = async () => {
       <div class="tool">
         <div class="btn">
           <el-button
+          color="#515de2"
             type="primary"
             :disabled="selectUser.length <= 0"
             @click="confirmAddGroup"
             >创建</el-button
           >
-          <el-button type="primary" plain @click="closeAddGroup"
+          <el-button type="primary" color="#515de2" plain @click="closeAddGroup"
             >取消</el-button
           >
         </div>
@@ -262,7 +263,7 @@ const confirmAddGroup = async () => {
   height: 570px;
   border-radius: 3px;
   overflow: hidden;
-  background-color: #fff;
+  background-color: var(--dialog-bgColor);
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -287,7 +288,7 @@ const confirmAddGroup = async () => {
     overflow: hidden;
     box-sizing: border-box;
     padding: 5px 0;
-    border-right: 1px solid #eee;
+    border-right: 1px solid var(--border-color);
     .search {
       width: 100%;
       height: 40px;
@@ -314,7 +315,7 @@ const confirmAddGroup = async () => {
           box-sizing: border-box;
           padding: 0px 20px;
           &:hover {
-            background-color: #f5f5f5;
+            background-color: var(--select-userColor);
           }
           .user {
             display: flex;
@@ -329,7 +330,7 @@ const confirmAddGroup = async () => {
             }
             .name {
               font-size: 14px;
-              color: #333;
+              color: var(--size-color);
               margin-left: 5px;
             }
           }
@@ -356,6 +357,7 @@ const confirmAddGroup = async () => {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
+      color:var(--size-color)
     }
     .cnt {
       width: 100%;
@@ -420,14 +422,14 @@ const confirmAddGroup = async () => {
     .message {
       flex: 1;
       width: 100%;
-      border-left: 1px solid #eee;
+      border-left: 1px solid var(--border-color);
       box-sizing: border-box;
       padding-left: 10px;
       .option {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        color: #333;
+        color: var(--size-color);
         margin-bottom: 10px;
         .label {
           width: 60px;

@@ -20,7 +20,7 @@ export const mainStore = defineStore('main', {
           id: 1,
         },
       ],
-      themeSelect: getStorage('theme') || 'light',
+      themeSelect: getStorage('theme') || 'dark',
       token: getStorage('token') || '',
       userInfo: getStorage('userInfo', 'object') || {},
       pointType: getStorage('pointType', 'object') || {

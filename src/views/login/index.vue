@@ -119,6 +119,7 @@ const registerRules = reactive({
 })
 // github 登录
 const githubLogin = (action: string) => {
+  console.log(import.meta.env)
   if (action === 'authorize') {
     let url =
       'https://github.com/login/oauth/authorize?client_id=' +
@@ -386,7 +387,7 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
 .login {
   width: 100%;
   height: 100%;
-  background-color: @mainColor;
+  background-color: var(--login-bgColor);
   position: relative;
   .container {
     position: absolute;

@@ -229,7 +229,7 @@ function searchClick(){
             </li>
           </ul>
           <div class="send">
-            <el-button type="primary" @click="cleartSession">发消息</el-button>
+            <el-button type="primary" color="#515de2" @click="cleartSession">发消息</el-button>
           </div>
         </div>
         <div class="box" v-if="selectName !== 'newFriend' && !userMessage">
@@ -297,7 +297,7 @@ function searchClick(){
       width: 100%;
       box-sizing: border-box;
       padding: 0 10px;
-      background-color: #f9f9f9;
+      background-color: var(--search-color);
       .cnt {
         margin-right: 10px;
       }
@@ -307,7 +307,7 @@ function searchClick(){
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #e6e6e6;
+        background-color: var(--theme-bgColor);
         cursor: pointer;
         &:hover {
           background-color: #dad8d8;
@@ -326,7 +326,7 @@ function searchClick(){
         margin-top: 10px;
         & > p {
           font-size: 12px;
-          color: #999;
+          color: var(--size-color);
           line-height: 20px;
           box-sizing: border-box;
           padding: 0 15px;
@@ -340,7 +340,7 @@ function searchClick(){
           padding: 0 15px;
           cursor: pointer;
           &:hover {
-            background-color: #e2e2e2;
+            background-color: var(--select-userColor);
           }
           .icon {
             width: 40px;
@@ -353,12 +353,12 @@ function searchClick(){
           }
           p {
             font-size: 16px;
-            color: #333;
+            color: var(--size-color);
             padding-left: 10px;
           }
         }
         .select {
-          background-color: #cfcfcf !important;
+          background-color: var(--select-userColor) !important;
         }
       }
       ul {
@@ -370,15 +370,16 @@ function searchClick(){
           height: 55px;
           align-items: center;
           justify-content: center;
+          color: var(--size-color);
           cursor: pointer;
           &:hover {
-            background-color: #e2e2e2;
+            background-color: var(--select-userColor);;
           }
           .img {
             width: 45px;
             height: 45px;
             overflow: hidden;
-            background-color: #e3e4e6;
+            background-color: var(--theme-bgColor);
             img {
               width: 100%;
               height: 100%;
@@ -398,7 +399,7 @@ function searchClick(){
           }
         }
         .select {
-          background-color: #cfcfcf !important;
+          background-color: var(--select-userColor) !important;
         }
       }
     }
@@ -406,15 +407,17 @@ function searchClick(){
   .session-cnt {
     flex: 1;
     height: 100%;
-    background-color: #f9f9f9;
-    border-left: 1px solid #e8eaec;
+    background-color: var(--theme-bgColor);
+    border-left: 1px solid var(--border-color);;
     .chat-top {
       height: 50px;
       width: 100%;
-      border-bottom: 1px solid #e8eaec;
+      border-bottom: 1px solid var(--border-color);;
       box-sizing: border-box;
+      color:var(--title-color);
     }
     .user-message {
+      background-color: var(--theme-bgColor);
       width: 100%;
       height: calc(100% - 50px);
       padding: 20px 10px;
@@ -433,7 +436,7 @@ function searchClick(){
           .avatar {
             width: 70px;
             height: 70px;
-            background-color: #e8eaec;
+            background-color: var(--theme-bgColor);
             img {
               width: 100%;
               height: 100%;
@@ -444,22 +447,22 @@ function searchClick(){
             padding-left: 10px;
             line-height: 22px;
             font-size: 14px;
-            color: #333;
+            color: var(--size-color);
             .name {
               font-size: 16px;
               line-height: 26px;
               font-weight: 700;
-              color: #333;
+              color: var(--size-color);
             }
           }
         }
         ul {
           line-height: 30px;
           font-size: 14px;
-          color: #555;
+          color: var(--size-color);
           padding: 10px 0;
-          border-top: 1px solid #eee;
-          border-bottom: 1px solid #eee;
+          border-top: 1px solid var(--border-color);
+          border-bottom: 1px solid var(--border-color);
           margin-top: 15px;
           li {
             width: 100%;
@@ -480,11 +483,11 @@ function searchClick(){
         width: 100%;
         .title {
           width: 100%;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid var(--border-color);
           height: 50px;
           line-height: 50px;
           font-size: 16px;
-          color: #333;
+          color: var(--size-color);
           h2 {
             font-weight: normal;
           }
@@ -499,7 +502,7 @@ function searchClick(){
             justify-content: space-between;
             width: 100%;
             height: 75px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             .img {
               width: 55px;
               height: 55px;
@@ -518,12 +521,12 @@ function searchClick(){
               .name {
                 width: 100%;
                 font-size: 14px;
-                color: #222;
+                color: var(--size-color);
                 line-height: 25px;
               }
               .desc {
                 font-size: 12px;
-                color: #666;
+                color: var(--size-color);
                 line-height: 20px;
               }
             }
@@ -542,7 +545,7 @@ function searchClick(){
                 line-height: 26px;
                 font-size: 12px;
                 background-color: #78d888;
-                color: #fff;
+                color: var(--size-color);
                 border-radius: 3px;
                 cursor: pointer;
               }
@@ -551,7 +554,7 @@ function searchClick(){
               }
               p {
                 font-size: 14px;
-                color: #555;
+                color: var(--size-color);
               }
             }
           }

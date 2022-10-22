@@ -55,8 +55,8 @@ defineProps<{
   width: 300px;
   box-sizing: border-box;
   padding: 20px;
-  background-color: #fff;
-  border: 1px solid #eee;
+  background-color: var(--dialog-bgColor);
+  border: 1px solid var(--border-color);
   .message {
     display: flex;
     justify-content: space-between;
@@ -74,7 +74,7 @@ defineProps<{
       flex: 1;
       line-height: 25px;
       font-size: 14px;
-      color: #666;
+      color: var(--size-color);
       box-sizing: border-box;
       padding-left: 10px;
       .name,
@@ -92,14 +92,14 @@ defineProps<{
   .bottom {
     width: 100%;
     margin-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
     padding-top: 20px;
     .note,
     .source {
       display: flex;
       line-height: 24px;
       font-size: 14px;
-      color: #333;
+      color: var(--size-color);
       .label{
         width: 60px;
       }

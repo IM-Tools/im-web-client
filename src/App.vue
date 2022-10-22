@@ -14,11 +14,19 @@ const store = mainStore()
 <style lang="less">
 @import '@/assets/css/index.less';
 body{
-  background-color: @mainColor;
+  background-color: var(--theme-bgColor);
   .main{
     width: 100%;
     height: 100vh;
     overflow: hidden;
+  
+  }
+  .el-input__wrapper{
+  background-color: var(--input-bgColor) !important;
+  box-shadow:none !important;
+}
+.is-focus{
+    box-shadow: 0 0 0 1px #fff inset !important;
   }
 }
 </style>
