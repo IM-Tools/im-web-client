@@ -720,6 +720,7 @@ function deleteGroupClick() {
             top: -3px;
             right: -5px;
             background-color: #ff1100;
+            color: #fff;
             line-height: 16px;
             text-align: center;
             i {
@@ -1126,7 +1127,7 @@ function deleteGroupClick() {
             height: 40px;
             margin: 0 auto;
             box-sizing: border-box;
-            border: 1px solid #eee;
+         
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1164,7 +1165,7 @@ function deleteGroupClick() {
           height: calc(100% - 410px);
           overflow-y: auto;
           padding: 0 0 30px;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid var(--border-color);
           margin-bottom: 20px;
         }
         .introduce {
@@ -1174,7 +1175,7 @@ function deleteGroupClick() {
             width: 100%;
             line-height: 25px;
             font-size: 16px;
-            color: #333;
+            color: var(--size-color);
             margin-bottom: 10px;
             .tit {
               width: 100%;
@@ -1193,7 +1194,7 @@ function deleteGroupClick() {
           display: flex;
           justify-content: center;
           align-items: center;
-          border-top: 1px solid #eee;
+          border-top: 1px solid var(--border-color);
           .bt {
             color: #e41f1f;
             padding: 5px 10px;

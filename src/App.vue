@@ -26,7 +26,10 @@ body{
   box-shadow:none !important;
 }
 .is-focus{
-    box-shadow: 0 0 0 1px #fff inset !important;
+    box-shadow: 0 0 0 1px var(--select-inputColor) inset !important;
+  }
+  .el-input__inner{
+    background-color: var(--input-bgColor) !important;
   }
 }
 </style>

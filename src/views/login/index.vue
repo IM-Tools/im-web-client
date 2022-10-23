@@ -22,6 +22,7 @@ const userInfo = reactive({
 })
 onMounted(() => {
   githubLogin('login')
+  initLogin()
 })
 // 是否注册
 const isReverse = ref<Boolean>(false)
@@ -118,8 +119,19 @@ const registerRules = reactive({
   code: [{ validator: validateCode, trigger: 'blur' }],
 })
 // github 登录
+
+
+
+const initLogin = ()=>{
+  if(router.currentRoute.value.query.login_type=='github'){
+    githubLogin('authorize')
+  }else{
+    console.log('未有登录类型')
+  }
+}
+
 const githubLogin = (action: string) => {
-  console.log(import.meta.env)
+
   if (action === 'authorize') {
     let url =
       'https://github.com/login/oauth/authorize?client_id=' +

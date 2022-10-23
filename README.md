@@ -1,4 +1,9 @@
-# Vue 3 + TypeScript + Vite
+# im-services web客户端
+
+[![OSCS Status](https://www.oscs1024.com/platform/badge/IM-Tools/Im-Services.svg?size=small)](https://www.oscs1024.com/project/IM-Tools/Im-Services?ref=badge_small)
+
+
+### 技术栈 ：Vue 3 + TypeScript + Vite
 
 This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
