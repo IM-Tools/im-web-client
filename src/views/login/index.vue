@@ -5,7 +5,7 @@ import { checkEmail } from '@/utils'
 // icon图标
 import { User, Unlock, FolderOpened, EditPen } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { mainStore } from '@/store'
+import { mainStore, sessionStore } from '@/store'
 // router
 import { useRouter } from 'vue-router'
 // 接口
@@ -15,6 +15,7 @@ import useTheme from '@/hooks/useTheme'
 const { themeList, changeThemeColor } = useTheme()
 const router = useRouter()
 const store = mainStore()
+const mySessionStore = sessionStore()
 // 用户账号密码
 const userInfo = reactive({
   account: '',
@@ -120,18 +121,15 @@ const registerRules = reactive({
 })
 // github 登录
 
-
-
-const initLogin = ()=>{
-  if(router.currentRoute.value.query.login_type=='github'){
+const initLogin = () => {
+  if (router.currentRoute.value.query.login_type == 'github') {
     githubLogin('authorize')
-  }else{
+  } else {
     console.log('未有登录类型')
   }
 }
 
 const githubLogin = (action: string) => {
-
   if (action === 'authorize') {
     let url =
       'https://github.com/login/oauth/authorize?client_id=' +
@@ -169,7 +167,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
       login({
         email: userInfo.account,
         password: userInfo.password,
-      }).then((res: any) => {
+      }).then(async (res: any) => {
         console.log(res)
         store.setToken(res.token)
         const info = {
@@ -181,7 +179,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           expire_time: res.expire_time,
         }
         store.setUserInfo(info)
-        // store.getSessionInfo()
+        await mySessionStore.setSessionList()
         router.push({
           path: '/',
         })
@@ -373,7 +371,6 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
               >确认注册</el-button
             >
           </div>
-          
         </div>
       </div>
       <div class="mask">
@@ -471,7 +468,7 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        span{
+        span {
           display: inline-block;
           width: 80px;
           height: 1px;
@@ -545,7 +542,7 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
         display: flex;
         margin: 5px 0;
       }
-      .register-btn{
+      .register-btn {
         margin-right: 20px;
       }
     }
