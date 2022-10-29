@@ -9,7 +9,7 @@ import { mainStore, sessionStore } from '@/store'
 // router
 import { useRouter } from 'vue-router'
 // 接口
-import { login, registerede, sendEmailCode, oauthGithub } from '@/api/login'
+import { login, registerede, sendEmailCode, oauthLogin } from '@/api/login'
 // 主题切换
 import useTheme from '@/hooks/useTheme'
 const { themeList, changeThemeColor } = useTheme()
@@ -22,8 +22,7 @@ const userInfo = reactive({
   password: '',
 })
 onMounted(() => {
-  githubLogin('login')
-  initLogin()
+  initLogin("login","login")
 })
 // 是否注册
 const isReverse = ref<Boolean>(false)
@@ -121,24 +120,29 @@ const registerRules = reactive({
 })
 // github 登录
 
-const initLogin = () => {
-  if (router.currentRoute.value.query.login_type == 'github') {
-    githubLogin('authorize')
-  } else {
-    console.log('未有登录类型')
-  }
-}
+const initLogin = (loginType: string,action: string) => {
 
-const githubLogin = (action: string) => {
-  if (action === 'authorize') {
-    let url =
+  let githubUrl =
       'https://github.com/login/oauth/authorize?client_id=' +
       import.meta.env.VITE_APP_CLIENT_ID +
       '&redirect_uri=' +
       import.meta.env.VITE_APP_REDIRECT_URL
-    window.location.href = url
-  } else if (router.currentRoute.value.query.code != undefined) {
-    oauthGithub({ code: router.currentRoute.value.query.code }).then(
+
+      let giteeUrl =
+      'https://gitee.com/oauth/authorize?client_id=' +
+      import.meta.env.VITE_APP_GITEE_CLIENT_ID +
+      '&redirect_uri=' +
+      import.meta.env.VITE_APP_GITEE_REDIRECT_URL+'&response_type=code'
+  
+  if (loginType === 'github' && action==="url") {
+    window.location.href = githubUrl
+  } else if (loginType === 'gitee' &&  action==="url") { 
+  
+    window.location.href = giteeUrl
+
+  }
+  if (router.currentRoute.value.query.code != undefined){
+  oauthLogin({ code: router.currentRoute.value.query.code,login_type:router.currentRoute.value.query.login_type }).then(
       (res: any) => {
         console.log(res)
         store.setToken(res.token)
@@ -157,8 +161,15 @@ const githubLogin = (action: string) => {
         })
       }
     )
+  }else{
+    if(router.currentRoute.value.query.login_type === 'github'){
+    window.location.href = githubUrl
+  } else if (router.currentRoute.value.query.login_type === 'gitee') {
+    window.location.href = giteeUrl
+  }
   }
 }
+
 // 登录
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
@@ -279,13 +290,20 @@ const submitRegisterForm = (formEl: FormInstance | undefined) => {
         <div class="other">
           <p><span></span> 第三方登录<span></span></p>
           <div class="other-list">
-            <div class="btn" @click="githubLogin('authorize')">
+            <div class="btn" @click="initLogin('github','url')">
               <div class="icon">
                 <svg-icon name="github" />
               </div>
-              <p>GitHub</p>
+              <!-- <p>GitHub</p> -->
+            </div>
+            <div class="btn" @click="initLogin('gitee','url')">
+              <div class="icon">
+                <svg-icon name="gitee" />
+              </div>
+              <!-- <p>Gitee</p> -->
             </div>
           </div>
+          
         </div>
       </div>
       <div class="right">
