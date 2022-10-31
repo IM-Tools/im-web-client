@@ -3,7 +3,7 @@ import { onMounted, ref, watch, reactive } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
-import { Search, Plus, Picture, Folder, Close } from '@element-plus/icons-vue'
+import { Search, Plus, Picture, Folder, Close, Switch } from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, groupType, sessionType } from '@/api/session/type'
@@ -251,6 +251,8 @@ function downloadFile(url: string) {
   a.setAttribute('download', getFileName(url))
   a.click()
 }
+// 是否展示会话列表
+const isShowList = ref(true)
 // 修改滚动距离
 const chatWarp = ref<any>(null)
 const chatContent = ref<any>(null)
@@ -329,7 +331,7 @@ function deleteGroupClick() {
 
 <template>
   <div class="session" @click="showMessage = false,isShowMsg = false">
-    <div class="session-list">
+    <div class="session-list" :class="{'close-list': isShowList}">
       <div class="search">
         <div class="cnt">
           <el-input
@@ -421,6 +423,7 @@ function deleteGroupClick() {
     </div>
     <div class="session-cnt">
       <div class="chat-top">
+        <span class="nav" @click="isShowList = !isShowList"><el-icon><Switch /></el-icon></span>
         {{ selectSession?.name }}
         <span class="tool" @click.stop="showMessageClick">···</span>
       </div>
@@ -641,6 +644,8 @@ function deleteGroupClick() {
   .session-list {
     width: 250px;
     height: 100%;
+    transition: all .2s;
+    overflow: hidden;
     .search {
       display: flex;
       height: 50px;
@@ -799,6 +804,9 @@ function deleteGroupClick() {
       }
     }
   }
+  .close-list{
+    width: 0px;
+  }
   .session-cnt {
     flex: 1;
     height: 100%;
@@ -820,6 +828,19 @@ function deleteGroupClick() {
         right: 10px;
         letter-spacing: 1px;
         font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        color: var(--size-color);
+        &:hover {
+          color: #222;
+        }
+      }
+      .nav {
+        position: absolute;
+        top: 0;
+        left: 10px;
+        letter-spacing: 1px;
+        font-size: 18px;
         font-weight: 700;
         cursor: pointer;
         color: var(--size-color);
