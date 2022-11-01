@@ -3,7 +3,14 @@ import { onMounted, ref, watch, reactive } from 'vue'
 import { sessionStore } from '@/store/session'
 import { mainStore } from '@/store'
 // icon图标
-import { Search, Plus, Picture, Folder, Close, Switch } from '@element-plus/icons-vue'
+import {
+  Search,
+  Plus,
+  Picture,
+  Folder,
+  Close,
+  Switch,
+} from '@element-plus/icons-vue'
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, groupType, sessionType } from '@/api/session/type'
@@ -23,15 +30,15 @@ const { getPoint } = usePoint()
 const point = ref()
 const isShowMsg = ref(false)
 const userMsg = ref()
-function avatarClick(e: any, user: any){
-  console.log(user);
-  
+function avatarClick(e: any, user: any) {
+  console.log(user)
+
   const msg = {
     avatar: user.Users.avatar,
     name: user.Users.name,
-    email: user.Users.email
+    email: user.Users.email,
   }
-  if(user.form_id === userInfo.value.id){
+  if (user.form_id === userInfo.value.id) {
     msg.avatar = userInfo.value.avatar
     msg.name = userInfo.value.name
     msg.email = userInfo.value.email
@@ -212,9 +219,24 @@ function fileChange(file: any) {
     })
     return
   }
+  console.log(file.target.files[0])
+
   const formData = new FormData()
   formData.append('file', file.target.files[0])
   uploadFile({ file: file.target.files[0] }).then((res) => {
+    if (
+      file.target.files[0].size > 5 * 1024 * 1024 &&
+      file.target.files[0].type.indexOf('image') !== -1
+    ) {
+      ElMessage({
+        type: 'warning',
+        message: '图片过大，以文件形式展示',
+      })
+      sendMsg(4, res.file_url)
+      // 清空选中的文件
+      fileRef.value.value = ''
+      return
+    }
     sendMsg(3, res.file_url)
     // 清空选中的文件
     fileRef.value.value = ''
@@ -330,8 +352,8 @@ function deleteGroupClick() {
 </script>
 
 <template>
-  <div class="session" @click="showMessage = false,isShowMsg = false">
-    <div class="session-list" :class="{'close-list': isShowList}">
+  <div class="session" @click=";(showMessage = false), (isShowMsg = false)">
+    <div class="session-list" :class="{ 'close-list': !isShowList }">
       <div class="search">
         <div class="cnt">
           <el-input
@@ -423,7 +445,9 @@ function deleteGroupClick() {
     </div>
     <div class="session-cnt">
       <div class="chat-top">
-        <span class="nav" @click="isShowList = !isShowList"><el-icon><Switch /></el-icon></span>
+        <span class="nav" @click="isShowList = !isShowList"
+          ><el-icon><Switch /></el-icon
+        ></span>
         {{ selectSession?.name }}
         <span class="tool" @click.stop="showMessageClick">···</span>
       </div>
@@ -464,13 +488,10 @@ function deleteGroupClick() {
                   {{ item.msg }}
                 </div>
                 <div class="audio" v-if="item.msg_type === 2">
-                  <!-- <audio :src="item.msg" controls></audio> -->
                   <MyAudio
                     :img-url="item.msg"
                     :isOwn="item.form_id === userInfo.id"
                   ></MyAudio>
-                  <!-- <div class="icon">音频</div>
-                  <div class="time">{{getAudioTime(item.msg)}}</div> -->
                 </div>
                 <div
                   class="chat-img"
@@ -492,6 +513,19 @@ function deleteGroupClick() {
                   v-if="
                     item.msg_type === 3 && getFileType(item.msg)[0] === 'other'
                   "
+                  @click="downloadFile(item.msg)"
+                >
+                  <div class="file">
+                    <div class="file-name">{{ getFileName(item.msg) }}</div>
+                    <div class="icon">
+                      <svg-icon name="file" color="#eee" />
+                      <span>{{ getFileType(item.msg)[1] }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="chat-file"
+                  v-if="item.msg_type === 4"
                   @click="downloadFile(item.msg)"
                 >
                   <div class="file">
@@ -644,7 +678,7 @@ function deleteGroupClick() {
   .session-list {
     width: 250px;
     height: 100%;
-    transition: all .2s;
+    transition: all 0.2s;
     overflow: hidden;
     .search {
       display: flex;
@@ -683,7 +717,7 @@ function deleteGroupClick() {
         box-sizing: border-box;
         height: 65px;
         align-items: center;
-        color:var(--select-userSizeColor);
+        color: var(--select-userSizeColor);
         justify-content: center;
         position: relative;
         cursor: pointer;
@@ -804,7 +838,7 @@ function deleteGroupClick() {
       }
     }
   }
-  .close-list{
+  .close-list {
     width: 0px;
   }
   .session-cnt {
@@ -821,7 +855,7 @@ function deleteGroupClick() {
       line-height: 50px;
       text-align: center;
       position: relative;
-      color:var(--title-color);
+      color: var(--title-color);
       .tool {
         position: absolute;
         top: 0;
@@ -1087,7 +1121,7 @@ function deleteGroupClick() {
           outline: none;
           box-sizing: border-box;
           padding: 10px 20px;
-          color:var(--size-color);
+          color: var(--size-color);
           line-height: 26px;
           background-color: var(--theme-bgColor);
         }
@@ -1148,7 +1182,7 @@ function deleteGroupClick() {
             height: 40px;
             margin: 0 auto;
             box-sizing: border-box;
-         
+
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1168,7 +1202,7 @@ function deleteGroupClick() {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color:var(--title-color);
+            color: var(--title-color);
           }
         }
       }
