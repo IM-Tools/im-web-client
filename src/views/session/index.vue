@@ -978,6 +978,7 @@ function deleteGroupClick() {
           }
           .chat-img {
             width: 100%;
+            max-height: 350px;
             overflow: hidden;
             img {
               max-width: 100%;
