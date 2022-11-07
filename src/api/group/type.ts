@@ -25,15 +25,23 @@ export interface groupUserType {
   }
 }
 
+export interface groupInfoTyep{
+  avatar: string
+  created_at: string
+  id: number
+  info: string
+  name: string
+  user_id: number,
+  is_pwd: number
+}
 export interface groupInfoType<T>{
   group_users: T[],
-  groups: {
-    avatar: string
-    created_at: string
-    id: number
-    info: string
-    name: string
-    user_id: number,
-    is_pwd: number
-  }
+  groups: groupInfoTyep
+}
+
+
+export interface removeType{
+  select_user: number[]
+  group_id: number
+  type: number
 }

@@ -21,6 +21,10 @@ const userInfo = reactive({
   account: '',
   password: '',
 })
+if(import.meta.env.VITE_APP_NODE_ENV === 'development'){
+  userInfo.account = '1752837807@qq.com'
+  userInfo.password = '123456'
+}
 onMounted(() => {
   initLogin("login","login")
 })

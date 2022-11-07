@@ -14,7 +14,7 @@ import {
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, groupType, sessionType } from '@/api/session/type'
-import type { groupUserType } from '@/api/group/type'
+import type { groupUserType,groupInfoTyep } from '@/api/group/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
@@ -70,7 +70,10 @@ function inviteBtnClick() {
   isShowTool.value = false
   isAddGroup.value = true
 }
-const closeAddGroup = () => {
+const closeAddGroup = (val: boolean) => {
+  if(val){
+    showMessageClick()
+  }
   isAddGroup.value = false
 }
 // 用户信息
@@ -321,9 +324,10 @@ function searchClick() {
   }
   store.getQuerySessionList(searchCnt.value)
 }
-// 聊天信息展示
+// 群聊用户信息展示
 const showMessage = ref<boolean>(false)
 const groupList = ref<groupUserType[]>([])
+const groupInfo = ref<groupInfoTyep>()
 function showMessageClick() {
   showMessage.value = !showMessage.value
   if (selectSession.value?.channel_type === 2) {
@@ -331,13 +335,13 @@ function showMessageClick() {
       id: selectSession.value.group_id || selectSession.value.id,
     }).then((res) => {
       console.log(res)
+      groupInfo.value = res.groups
       groupList.value = res.group_users
     })
   }
 }
 // 退出群聊
 function deleteGroupClick() {
-  console.log(333)
   if (!selectSession.value) {
     return
   }
@@ -630,7 +634,7 @@ function deleteGroupClick() {
               </div>
               <div class="name">{{ item.users.name || item.name }}</div>
             </div>
-            <div class="user" @click="inviteBtnClick">
+            <div class="user" @click="inviteBtnClick"  v-if="userInfo.id === groupInfo?.user_id">
               <div class="avatar"><Plus /></div>
               <div class="name">添加</div>
             </div>
@@ -663,6 +667,7 @@ function deleteGroupClick() {
     <AddGroup
       @closeAddGroup="closeAddGroup"
       :isShowTool="isShowTool"
+      :selectUserList="groupList"
     ></AddGroup>
   </div>
   <div class="mask" v-if="isAddGroup"></div>

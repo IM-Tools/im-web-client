@@ -3,30 +3,42 @@ import { Close, Search } from '@element-plus/icons-vue'
 import { onMounted, ref, reactive, watch } from 'vue'
 import { friendList } from '@/api/friend'
 import { computed } from '@vue/reactivity'
-import { createGroup } from '@/api/group'
+import { createGroup, createOrRemoveUser } from '@/api/group'
 import { drawAvatar } from '@/utils/index'
-import { mainStore, sessionStore } from '@/store'
+import { mainStore } from '@/store'
 import { uploadFile } from '@/api/chat'
-import { createGroupDataType } from '@/api/group/type'
-import { createSession } from '@/api/session'
+import type { groupUserType, createGroupDataType } from '@/api/group/type'
 // 关闭添加窗口
 const emit = defineEmits(['closeAddGroup'])
 const closeAddGroup = () => {
   emit('closeAddGroup')
 }
-// const props = defineProps({
-//   isShowTool: {
-//     type: Boolean,
-//     required: true,
-//   },
-// })
+const props = defineProps<{
+  isShowTool: Boolean
+  selectUserList: groupUserType[]
+}>()
 // 搜索用户名
 const searchName = ref('')
 // 获得用户列表
 const userList = ref()
 function getUserList() {
   friendList().then((res) => {
-    console.log(res)
+    if (!props.isShowTool) {
+      const list = res.filter((user: any) => {
+        let flag = true
+        props.selectUserList?.forEach((item: groupUserType) => {
+          if (item.users.id === user.Users.id) {
+            flag = false
+          }
+        })
+        return flag
+      })
+      userList.value = list.map((item: any) => {
+        item.checkType = false
+        return item
+      })
+      return
+    }
     userList.value = res.map((item: any) => {
       item.checkType = false
       return item
@@ -57,8 +69,6 @@ const userAvatar = ref('')
 const blobFile = ref()
 function getImgUrl(url: string, blob: any) {
   blobFile.value = blob
-  console.log(blobFile.value)
-
   userAvatar.value = url
 }
 watch(
@@ -103,8 +113,20 @@ function selectThemeClick(theme: string) {
   }
   selectTheme.value.push(theme)
 }
-const mySessionStore = sessionStore()
 const confirmAddGroup = async () => {
+  if (!props.isShowTool) {
+    const select_user = selectUser.value.map((item: any) => {
+      return item.Users.id
+    })
+    const result = await createOrRemoveUser({
+      select_user,
+      group_id: props.selectUserList[0].group_id,
+      type: 1
+    })
+    console.log(123, result);
+    emit('closeAddGroup', true)
+    return
+  }
   const fileOfBlob = new File([blobFile.value], new Date().getTime() + '.png')
   const res = await uploadFile({ file: fileOfBlob })
   createInfo.avatar = res.file_url
@@ -113,19 +135,8 @@ const confirmAddGroup = async () => {
   createInfo.select_user = selectUser.value.map((item: any) => {
     return item.Users.id
   })
-  console.log(createInfo)
-
   createGroup(createInfo).then((res: any) => {
-    console.log(res)
     emit('closeAddGroup')
-    // createSession({
-    //   id: res.id,
-    //   type: 2,
-    // }).then((res) => {
-    //   console.log(res)
-    //   mySessionStore.changeSessionList(res, 'add')
-    //   emit('closeAddGroup')
-    // })
   })
 }
 </script>
@@ -185,8 +196,7 @@ const confirmAddGroup = async () => {
             </li>
           </ul>
         </div>
-        <!--  v-if="isShowTool" -->
-        <div class="message">
+        <div class="message" v-if="isShowTool">
           <div class="option">
             <div class="label">群头像：</div>
             <div class="input">
@@ -242,11 +252,11 @@ const confirmAddGroup = async () => {
       <div class="tool">
         <div class="btn">
           <el-button
-          color="#515de2"
+            color="#515de2"
             type="primary"
             :disabled="selectUser.length <= 0"
             @click="confirmAddGroup"
-            >创建</el-button
+            >{{ isShowTool ? '创建' : '邀请' }}</el-button
           >
           <el-button type="primary" color="#515de2" plain @click="closeAddGroup"
             >取消</el-button
@@ -357,7 +367,7 @@ const confirmAddGroup = async () => {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
-      color:var(--size-color)
+      color: var(--size-color);
     }
     .cnt {
       width: 100%;
