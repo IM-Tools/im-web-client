@@ -21,6 +21,8 @@ const userInfo = reactive({
   account: '',
   password: '',
 })
+console.log(import.meta.env.VITE_APP_NODE_ENV);
+
 if(import.meta.env.VITE_APP_NODE_ENV === 'development'){
   userInfo.account = '1752837807@qq.com'
   userInfo.password = '123456'

@@ -630,9 +630,9 @@ function deleteGroupClick() {
           <div class="user-list">
             <div class="user" v-for="item in groupList" :key="item.id">
               <div class="avatar">
-                <img :src="item.users.avatar || item.avatar" alt="" />
+                <img :src="item.users.avatar" alt="" />
               </div>
-              <div class="name">{{ item.users.name || item.name }}</div>
+              <div class="name">{{ item.users.name }}</div>
             </div>
             <div class="user" @click="inviteBtnClick"  v-if="userInfo.id === groupInfo?.user_id">
               <div class="avatar"><Plus /></div>
