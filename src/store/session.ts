@@ -389,6 +389,11 @@ export const sessionStore = defineStore('sessionStore', {
             this.chattingRecords.list.push(message)
             setStorage('chattingRecords', this.chattingRecords)
           }
+          // 接收用户加入消息
+          if(message.form_id === this.selectSession.group_id && message.msg_type === 6){
+            this.chattingRecords.list.push(message)
+            setStorage('chattingRecords', this.chattingRecords)
+          }
           this.changeGroupPoint(message)
         }
       }

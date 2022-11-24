@@ -14,7 +14,7 @@ import {
 import { computed } from '@vue/reactivity'
 import { sendChatMessage, uploadFile } from '@/api/chat'
 import type { userType, groupType, sessionType } from '@/api/session/type'
-import type { groupUserType,groupInfoTyep } from '@/api/group/type'
+import type { groupUserType, groupInfoTyep } from '@/api/group/type'
 import { timestampChange } from '@/utils'
 import Emoji from '@/components/emoji/Emoji.vue'
 import { ElMessage } from 'element-plus'
@@ -71,7 +71,7 @@ function inviteBtnClick() {
   isAddGroup.value = true
 }
 const closeAddGroup = (val: boolean) => {
-  if(val){
+  if (val) {
     showMessageClick()
   }
   isAddGroup.value = false
@@ -471,10 +471,17 @@ function deleteGroupClick() {
             <span class="loading spin" v-if="isShowLoading">加载中</span>
           </p>
           <li v-for="item in chattingRecordsList.list" :key="item.id">
-            <p v-if="item.isShowTime">
+            <p v-if="item.msg_type !== 6 && item.isShowTime">
               <span>{{ getChatPotinTime(item.created_at) }}</span>
             </p>
-            <div class="box" :class="{ own: item.form_id === userInfo.id }">
+            <p v-if="item.msg_type === 6">
+              <span>{{ item.msg }}</span>
+            </p>
+            <div
+              class="box"
+              :class="{ own: item.form_id === userInfo.id }"
+              v-if="item.msg_type !== 6"
+            >
               <div class="avatar" @click.stop="avatarClick($event, item)">
                 <img
                   :src="item.Users.avatar"
@@ -483,13 +490,15 @@ function deleteGroupClick() {
                 />
                 <img :src="userInfo.avatar" alt="" v-else />
               </div>
-              <div class="chat-msg">
+              <div class="chat-msg" :class="{private: !item.channel_type || item.channel_type === 1}">
                 <div class="chat-name" v-if="item.form_id !== userInfo.id">
-                  {{ item.Users.name }}
+                  {{ item.channel_type === 2 ? item.Users.name : '' }}
                 </div>
-                <div class="chat-name" v-else>{{ userInfo.name }}</div>
+                <div class="chat-name" v-if="item.form_id === userInfo.id">
+                  {{ item.channel_type === 2 ? userInfo.name : '' }}
+                </div>
                 <div class="chat-cnt" v-if="item.msg_type === 1">
-                  {{ item.msg }}
+                  {{ item.msg+ ''+item.channel_type }}
                 </div>
                 <div class="audio" v-if="item.msg_type === 2">
                   <MyAudio
@@ -634,7 +643,11 @@ function deleteGroupClick() {
               </div>
               <div class="name">{{ item.users.name }}</div>
             </div>
-            <div class="user" @click="inviteBtnClick"  v-if="userInfo.id === groupInfo?.user_id">
+            <div
+              class="user"
+              @click="inviteBtnClick"
+              v-if="userInfo.id === groupInfo?.user_id"
+            >
               <div class="avatar"><Plus /></div>
               <div class="name">添加</div>
             </div>
@@ -1033,6 +1046,11 @@ function deleteGroupClick() {
                 }
               }
             }
+          }
+        }
+        .private{
+          .chat-name {
+            margin-top: 0;
           }
         }
       }
