@@ -8,6 +8,7 @@ import { drawAvatar } from '@/utils/index'
 import { mainStore } from '@/store'
 import { uploadFile } from '@/api/chat'
 import type { groupUserType, createGroupDataType } from '@/api/group/type'
+import { ElMessage } from 'element-plus'
 // 关闭添加窗口
 const emit = defineEmits(['closeAddGroup'])
 const closeAddGroup = () => {
@@ -118,13 +119,40 @@ const confirmAddGroup = async () => {
     const select_user = selectUser.value.map((item: any) => {
       return item.Users.id
     })
-    const result = await createOrRemoveUser({
+    await createOrRemoveUser({
       select_user,
       group_id: props.selectUserList[0].group_id,
       type: 1
     })
-    console.log(123, result);
     emit('closeAddGroup', true)
+    return
+  }
+  if(!createInfo.name){
+    ElMessage({
+      type: 'warning',
+      message: '请选择群聊名称'
+    })
+    return
+  }
+  if(!createInfo.info){
+    ElMessage({
+      type: 'warning',
+      message: '请输入群描述'
+    })
+    return
+  }
+  if(selectTheme.value.length <= 0){
+    ElMessage({
+      type: 'warning',
+      message: '请选择群聊主题'
+    })
+    return
+  }
+  if(selectUser.value.length <= 0){
+    ElMessage({
+      type: 'warning',
+      message: '请选择群聊用户'
+    })
     return
   }
   const fileOfBlob = new File([blobFile.value], new Date().getTime() + '.png')
