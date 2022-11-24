@@ -25,6 +25,6 @@ export function friendRecord(data: friendRecordType) {
   return request.put<friendType<userType>>('/friends/record', data)
 }
 // 查询非好友列表
-export function getUserList(params?: { email: string}){
+export function getUserList(params?: { keyword: string}){
   return request.get<noFriendType[]>('/friends/userQuery', { params })
 }

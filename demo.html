@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动画特效</title>
+    <style>
+        *{
+             margin: 0px;
+             padding: 0px;
+             box-sizing: border-box;
+            
+        }
+        body{
+            height: 100%;
+            width: 100%;
+            justify-content: center;
+            display: flex;
+            background-color: #fff;
+            
+        }
+        #water {
+            margin-top: 200px;
+            width: 300px;
+            height: 300px;
+            border-radius: 65% 35% 70% 30% / 30% 30% 70% 70% ;
+            box-shadow: inset 10px 20px 30px rgba(0,0,0,0.5),
+            10px 10px 20px rgba(0,0,0,0.3),
+            15px 15px 30px rgba(0,0,0,0.05),
+            inset -10px -10px 15px rgba(255,255,255,0.8);
+            animation:action 3s linear infinite alternate ;
+        }
+        #water::after{
+            content: '';
+            width: 20px;
+            height: 20px;
+            position:absolute;
+            top: 240px;
+            left: 48%;
+            border-radius: 65% 35% 70% 30% / 49% 46% 54% 51% ;
+            background-color: rgba(255,255,255,0.8);
+        }
+        #water::before{
+            content: '';
+            width: 10px;
+            height: 10px;
+            position:absolute;
+            top: 265px;
+            left: 46%;
+            border-radius:67% 33% 53% 47% / 65% 70% 30% 35%  ;
+            background-color: rgba(255,255,255,0.8);
+        }
+        @keyframes action {
+            25%{
+                border-radius:54% 46% 88% 12% / 39% 55% 45% 61%  ;
+            }
+            50%{
+                border-radius:39% 61% 37% 63% / 19% 26% 74% 81% 
+            }
+            100%{
+                border-radius:65% 35% 75% 25% / 22% 76% 24% 78% 
+            }
+          
+        }
+    </style>
+</head>
+<body>
+     <div id="water"></div>
+</body>
+</html> 

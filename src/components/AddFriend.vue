@@ -20,7 +20,7 @@ onMounted(() => {
 })
 // 查询用户
 const searchClick = () => {
-  getUserList()
+  getOtherUserList()
 }
 // 关闭添加好友窗口
 const emit = defineEmits(['closeAddFriend'])
