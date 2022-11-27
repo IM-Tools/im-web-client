@@ -4,7 +4,7 @@ import { sessionStore, userStore, mainStore } from '@/store'
 import { timestampChange } from '@/utils'
 import { getFriendDetails } from '@/api/friend'
 import { getStorage } from '@/utils/storage'
-import { useRoute } from 'vue-router'
+import { useRoute,useRouter } from 'vue-router'
 interface socketOptions {
   close: Function
   ws: object
@@ -12,8 +12,11 @@ interface socketOptions {
 }
 let wsObj: socketOptions | null = null
 function closeWs() {
+  const route = useRoute()
   wsObj && wsObj.close()
   wsObj = null
+ 
+
 }
 function initWebsocket(openBack: Function, closeBack: Function) {
   if (wsObj) {
@@ -23,11 +26,12 @@ function initWebsocket(openBack: Function, closeBack: Function) {
   const usersStore = userStore()
   const mainStores = mainStore()
   const route = useRoute()
+  const router = useRouter()
   const { status, data, send, open, close } = useWebSocket(
     import.meta.env.VITE_APP_WS_API + getStorage('token'),
     {
       autoReconnect: {
-        retries: -1,
+        retries: 10,
         delay: 1500,
         onFailed() {
           console.log('websocket重连失败')
@@ -202,7 +206,12 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             }
             store.changeSessionList(session, 'add')
             break
-        }
+          case 2004:
+            mainStores.setLogoutInfo(message)
+            mainStores.logOut(true)
+            router.push({'path':'/login'})
+            break
+          }
       },
     }
   )

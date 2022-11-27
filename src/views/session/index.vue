@@ -676,6 +676,7 @@ function deleteGroupClick() {
   <div class="voice" v-if="isShowVoice">
     <Voice @closeVoice="isShowVoice = false" @sendVoice="sendVoiceMsg"></Voice>
   </div>
+
   <div class="add-group-box" v-if="isAddGroup">
     <AddGroup
       @closeAddGroup="closeAddGroup"

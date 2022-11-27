@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import Layout from '@/layout/index.vue'
-import { mainStore } from './store';
+import { ref } from 'vue'
+import { computed } from '@vue/reactivity'
+import { mainStore } from './store'
+import LogoutDialog from '@/components/LogoutDialog.vue'
 const store = mainStore()
+const isLogout = computed(() => store.isLogout)
 </script>
 
 <template>
 <div class="main" :class="store.themeSelect">
   <Layout v-if="$route.meta.isNav"></Layout>
   <RouterView v-else></RouterView>
+  <LogoutDialog v-if="isLogout"></LogoutDialog>
 </div>
 </template>
 

@@ -26,7 +26,9 @@ export const mainStore = defineStore('main', {
       pointType: getStorage('pointType', 'object') || {
         session: false,
         address: false
-      }
+      },
+       isLogout:false,
+       logoutInfo: getStorage('logoutInfo')
     }
   },
   actions: {
@@ -46,16 +48,35 @@ export const mainStore = defineStore('main', {
       setStorage('userInfo', data)
       this.userInfo = data
     },
-    logOut(){
+    setLogoutInfo(data: Object){
+      setStorage('logoutInfo', data)
+      this.logoutInfo = data
+    },
+    logOut(isLogout:boolean = false){
+      setStorage('isLogout',isLogout)
       closeWs()
-      this.token = ''
-      this.userInfo = {}
-      removeStorage('token')
-      removeStorage('userInfo')
-      const sessionStores = sessionStore()
-      sessionStores.init()
-      const userStores = userStore()
-      userStores.init()
-    }
+      this.isLogout = true
+      if(isLogout == true) {
+        setTimeout(()=>{
+          this.token = ''
+          this.userInfo = {}
+          removeStorage('token')
+          removeStorage('userInfo')
+          const sessionStores = sessionStore()
+          sessionStores.init()
+          const userStores = userStore()
+          userStores.init()
+        }, 5000);
+      }else{
+        this.token = ''
+        this.userInfo = {}
+        removeStorage('token')
+        removeStorage('userInfo')
+        const sessionStores = sessionStore()
+        sessionStores.init()
+        const userStores = userStore()
+        userStores.init()
+      }
+      }
   },
 })
