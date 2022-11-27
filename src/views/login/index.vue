@@ -12,6 +12,7 @@ import { useRouter } from 'vue-router'
 import { login, registerede, sendEmailCode, oauthLogin } from '@/api/login'
 // 主题切换
 import useTheme from '@/hooks/useTheme'
+import Push from 'push.js'
 const { themeList, changeThemeColor } = useTheme()
 const router = useRouter()
 const store = mainStore()
@@ -29,6 +30,7 @@ if(import.meta.env.VITE_APP_NODE_ENV === 'development'){
 }
 onMounted(() => {
   initLogin("login","login")
+  Push.Permission.request()
 })
 // 是否注册
 const isReverse = ref<Boolean>(false)

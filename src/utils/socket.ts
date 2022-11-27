@@ -5,6 +5,7 @@ import { timestampChange } from '@/utils'
 import { getFriendDetails } from '@/api/friend'
 import { getStorage } from '@/utils/storage'
 import { useRoute,useRouter } from 'vue-router'
+import Push from 'push.js'
 interface socketOptions {
   close: Function
   ws: object
@@ -23,6 +24,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
     return
   }
   const store = sessionStore()
+
   const usersStore = userStore()
   const mainStores = mainStore()
   const route = useRoute()
@@ -75,6 +77,13 @@ function initWebsocket(openBack: Function, closeBack: Function) {
                 id: res.id,
                 name: res.name,
               }
+              console.log('psuh')
+              Push.create(res.name+"给你发来一条消息", {
+                body: message.message,
+                requireInteraction: false,
+                icon: res.avatar,
+                timeout: 600000,
+            });
             } else {
               const users = JSON.parse(message.data)
               Users = {
@@ -83,6 +92,12 @@ function initWebsocket(openBack: Function, closeBack: Function) {
                 id: users.id,
                 name: users.name,
               }
+              Push.create(users.name+"给你发来一条消息", {
+                body: message.message,
+                requireInteraction: false,
+                icon: users.avatar,
+                timeout: 600000,
+            });
             }
             const chatMsg = {
               Users: Users,

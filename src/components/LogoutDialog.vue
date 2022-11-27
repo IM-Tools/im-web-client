@@ -21,14 +21,15 @@
   import { ElMessageBox } from 'element-plus'
   import { mainStore } from '@/store'
   import { computed } from '@vue/reactivity'
-
+  import { useRouter } from 'vue-router'
   const dialogVisible = ref(true)
+  const router = useRouter()
   const store = mainStore()
   const logoutInfo = computed(() => store.logoutInfo)
   const handleClose = (done: () => void) => {
-    ElMessageBox.confirm('Are you sure to close this dialog?')
+    ElMessageBox.confirm('退出登录')
       .then(() => {
-        store.logOut()
+        router.push({path:"/login"})
         done()
       })
       .catch(() => {

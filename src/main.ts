@@ -18,7 +18,6 @@ import 'virtual:svg-icons-register'
 // 指令
 import { customMenu } from '@/directive/index'
 // vue实例
-
 import App from './App.vue'
 const app = createApp(App)
 app.component('svg-icon', svgIcon)

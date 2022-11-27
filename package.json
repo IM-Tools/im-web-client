@@ -17,6 +17,7 @@
     "livekit-client": "^1.2.10",
     "normalize.css": "^8.0.1",
     "pinia": "^2.0.14",
+    "push.js": "^1.0.12",
     "vue": "^3.2.25",
     "vue-router": "4",
     "vue3-discordpicker": "^1.1.0"
