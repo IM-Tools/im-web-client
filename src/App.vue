@@ -1,11 +1,25 @@
 <script setup lang="ts">
 import Layout from '@/layout/index.vue'
-import { ref } from 'vue'
-import { computed } from '@vue/reactivity'
+import { computed, onMounted } from 'vue'
 import { mainStore } from './store'
 import LogoutDialog from '@/components/LogoutDialog.vue'
+import Push from 'push.js'
 const store = mainStore()
 const isLogout = computed(() => store.isLogout)
+onMounted(() => {
+  if (!Push.Permission.has()) {
+    Push.Permission.request(
+      () => {
+        console.log('同意')
+        store.changePermission(true)
+      },
+      () => {
+        console.log('拒绝')
+        store.changePermission(false)
+      }
+    )
+  }
+})
 </script>
 
 <template>

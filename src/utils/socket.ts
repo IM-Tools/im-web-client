@@ -75,8 +75,8 @@ function initWebsocket(openBack: Function, closeBack: Function) {
                 id: res.id,
                 name: res.name,
               }
-              console.log('psuh')
-              Push.create(res.name + '给你发来一条消息', {
+              // console.log('psuh')
+              mainStores.isPermission && Push.create(res.name + '给你发来一条消息', {
                 body: message.message,
                 requireInteraction: false,
                 icon: res.avatar,
@@ -90,7 +90,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
                 id: users.id,
                 name: users.name,
               }
-              Push.create(users.name + '给你发来一条消息', {
+              mainStores.isPermission && Push.create(users.name + '给你发来一条消息', {
                 body: message.message,
                 requireInteraction: false,
                 icon: users.avatar,
@@ -220,6 +220,7 @@ function initWebsocket(openBack: Function, closeBack: Function) {
             store.changeSessionList(session, 'add')
             break
           case 2004:
+            // console.log('其他地方登录',message);
             mainStores.setLogoutInfo(message)
             mainStores.logOut(true)
             router.push({ path: '/login' })

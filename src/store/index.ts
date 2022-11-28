@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { getStorage, setStorage,removeStorage  } from '@/utils/storage'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { sessionStore } from './session'
 export { sessionStore }
-import { userStore} from './user'
-export { userStore}
+import { userStore } from './user'
+export { userStore }
 import { closeWs } from '@/utils/socket'
 export const mainStore = defineStore('main', {
   state: () => {
@@ -25,10 +25,11 @@ export const mainStore = defineStore('main', {
       userInfo: getStorage('userInfo', 'object') || {},
       pointType: getStorage('pointType', 'object') || {
         session: false,
-        address: false
+        address: false,
       },
-       isLogout:false,
-       logoutInfo: getStorage('logoutInfo')
+      isLogout: false,
+      logoutInfo: getStorage('logoutInfo'),
+      isPermission: false,
     }
   },
   actions: {
@@ -36,7 +37,7 @@ export const mainStore = defineStore('main', {
       setStorage('theme', theme)
       this.themeSelect = theme
     },
-    changPoint(key: string, type: boolean){
+    changPoint(key: string, type: boolean) {
       this.pointType[key] = type
       setStorage('pointType', this.pointType)
     },
@@ -48,35 +49,27 @@ export const mainStore = defineStore('main', {
       setStorage('userInfo', data)
       this.userInfo = data
     },
-    setLogoutInfo(data: Object){
+    setLogoutInfo(data: Object) {
       setStorage('logoutInfo', data)
       this.logoutInfo = data
     },
-    logOut(isLogout:boolean = false){
-      setStorage('isLogout',isLogout)
+    clearMessage(){
+      this.isLogout = false
+    },
+    changePermission(permission: boolean) {
+      this.isPermission = permission
+    },
+    logOut(isLogout: boolean = false) {
+      this.isLogout = isLogout
       closeWs()
-      this.isLogout = true
-      if(isLogout == true) {
-        setTimeout(()=>{
-          this.token = ''
-          this.userInfo = {}
-          removeStorage('token')
-          removeStorage('userInfo')
-          const sessionStores = sessionStore()
-          sessionStores.init()
-          const userStores = userStore()
-          userStores.init()
-        }, 5000);
-      }else{
-        this.token = ''
-        this.userInfo = {}
-        removeStorage('token')
-        removeStorage('userInfo')
-        const sessionStores = sessionStore()
-        sessionStores.init()
-        const userStores = userStore()
-        userStores.init()
-      }
-      }
+      this.token = ''
+      this.userInfo = {}
+      removeStorage('token')
+      removeStorage('userInfo')
+      const sessionStores = sessionStore()
+      sessionStores.init()
+      const userStores = userStore()
+      userStores.init()
+    },
   },
 })
