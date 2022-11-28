@@ -471,7 +471,7 @@ function deleteGroupClick() {
             <span class="loading spin" v-if="isShowLoading">加载中</span>
           </p>
           <li v-for="item in chattingRecordsList.list" :key="item.id">
-            <p v-if="item.msg_type !== 6 && item.isShowTime">
+            <p v-if="(item.msg_type !== 6) && item.isShowTime">
               <span>{{ getChatPotinTime(item.created_at) }}</span>
             </p>
             <p v-if="item.msg_type === 6">

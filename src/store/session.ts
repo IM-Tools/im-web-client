@@ -310,7 +310,7 @@ export const sessionStore = defineStore('sessionStore', {
               id: item.Id,
               is_read: 0,
               msg: item.Message,
-              msg_type: 1,
+              msg_type: item.MsgType,
               to_id: item.GroupId,
               status: 1,
             }

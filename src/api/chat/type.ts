@@ -41,6 +41,7 @@ export interface chatGroupType {
   Message: string
   MessageId: number
   SendTime: number
+  MsgType: number
   Users: {
     avatar: string
     email: string
