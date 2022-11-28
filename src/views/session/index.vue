@@ -498,7 +498,7 @@ function deleteGroupClick() {
                   {{ item.channel_type === 2 ? userInfo.name : '' }}
                 </div>
                 <div class="chat-cnt" v-if="item.msg_type === 1">
-                  {{ item.msg+ ''+item.channel_type }}
+                  {{ item.msg }}
                 </div>
                 <div class="audio" v-if="item.msg_type === 2">
                   <MyAudio
